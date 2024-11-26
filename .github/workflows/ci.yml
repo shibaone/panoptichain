@@ -1,0 +1,30 @@
+name: ci
+on: push
+
+env:
+  GO_VERSION: "1.21"
+
+jobs:
+  gen:
+    name: Check generated files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
+        with:
+          go-version: ${{ env.GO_VERSION }}
+      - name: Generate files
+        run: |
+          make -B metrics.md
+          go install golang.org/x/tools/cmd/stringer@latest
+          go generate ./...
+      - name: Ensure generated files are updated
+        run: |
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "❌ Error: Generated files are not up to date. Please run \`make -B metrics.md && go generate ./...\`."
+            git status --porcelain
+            git diff
+            exit 1
+          else
+            echo "✅ Generated files are up to date."
+          fi

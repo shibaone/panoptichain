@@ -1,0 +1,7 @@
+.idea
+out/
+*.env
+ansible/
+terraform/
+grafana/
+prometheus.yml

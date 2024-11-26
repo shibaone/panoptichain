@@ -1,0 +1,26 @@
+@startuml sequence-diagram
+
+title Sequence Diagram
+
+participant RPCProvider
+participant PoS
+participant EventBus
+participant EmptyBlockObserver
+participant PromCounter
+participant PromHTTP
+participant Prometheus
+participant DataDog
+
+RPCProvider -> PoS: eth_blocknumber Request
+RPCProvider <-- PoS: eth_blocknumber Response
+RPCProvider -> EventBus: Publish block
+EventBus -> EmptyBlockObserver: Notifies observer
+EmptyBlockObserver -> PromCounter: Updates metrics
+Prometheus -> PromHTTP: Request metrics
+PromHTTP -> PromCounter: Reads value
+Prometheus <-- PromHTTP: Metrics response
+DataDog -> PromHTTP: Request metrics
+PromHTTP -> PromCounter: Reads value
+DataDog <-- PromHTTP: Metrics response
+
+@enduml

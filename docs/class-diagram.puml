@@ -1,0 +1,61 @@
+@startuml class-diagram
+
+title Class Diagram
+
+package provider {
+  interface Provider {
+	  {abstract} RefreshState(context.Context) error
+	  {abstract} PublishEvents(context.Context) error
+	  {abstract} SetEventBus(*observer.EventBus)
+	  {abstract} PollingInterval() uint
+  }
+
+  struct RPCProvider implements Provider {
+	  Network   network.Network
+	  Label     string
+	  bus       *observer.EventBus
+  } 
+}
+
+package observer {
+  package topics {
+    enum ObservableTopic {
+      NewEVMBlock
+      BlockInterval
+    }
+  }
+
+  interface Observer {
+	  {abstract} Notify(context.Context, Message)
+	  {abstract} Register(*EventBus)
+	  {abstract} GetCollectors() []prometheus.Collector
+  }
+
+  interface Message {
+	  {abstract} Time() time.Time
+	  {abstract} Network() network.Network
+	  {abstract} Provider() string
+	  {abstract} Data() any
+  }
+
+  struct EventBus {
+	  observers map[string]ObserverSet
+	  jobs      chan struct{}
+
+    Subscribe(topic Topic, o Observer)
+    Publish(ctx context.Context, topic Topic, m Message)
+  }
+
+  struct EmptyBlockObserver implements Observer {
+	  counter *prometheus.CounterVec
+  }
+}
+
+RPCProvider::bus *-- EventBus
+Provider::SetEventBus --* RPCProvider::bus
+EventBus::Subscribe --* ObservableTopic
+EventBus::Subscribe --* Observer
+EventBus::Publish --* ObservableTopic
+EventBus::Publish --* Message
+
+@enduml
