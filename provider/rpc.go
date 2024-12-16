@@ -1161,10 +1161,10 @@ func runProvider(ctx context.Context, p *RPCProvider) {
 	}
 }
 
-func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client, address common.Address, co *bind.CallOpts, rollupID uint32, chainID uint64) error {
-	contract, err := contracts.NewPolygonZkEVMEtrog(address, c)
+func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client, co *bind.CallOpts, rollupID uint32, rollup RollupData) error {
+	contract, err := contracts.NewPolygonZkEVMEtrog(rollup.RollupContract, c)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("Unable to bind zkEVM Etrog contract")
+		r.logger.Error().Err(err).Msg("Unable to bind PolygonConsensusBase contract")
 		return nil
 	}
 
@@ -1172,7 +1172,8 @@ func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client
 		r.rollupManager.Rollups[rollupID] = &observer.RollupData{}
 	}
 
-	r.rollupManager.Rollups[rollupID].ChainID = &chainID
+	r.rollupManager.Rollups[rollupID].ChainID = &rollup.ChainID
+	r.rollupManager.Rollups[rollupID].LastLocalExitRoot = rollup.LastLocalExitRoot
 
 	lfb, err := contract.LastForceBatch(co)
 	if err != nil {
@@ -1303,6 +1304,24 @@ func (r *RPCProvider) refreshZkEVMContracts(contract *contracts.PolygonRollupMan
 	return nil
 }
 
+// RollupData is the struct returned by the RollupIDToRollupData method. This is
+// here because the abigen tool doesn't generate a named struct for this data.
+// Update this value if the response ever changes.
+type RollupData struct {
+	RollupContract                 common.Address
+	ChainID                        uint64
+	Verifier                       common.Address
+	ForkID                         uint64
+	LastLocalExitRoot              [32]byte
+	LastBatchSequenced             uint64
+	LastVerifiedBatch              uint64
+	LastPendingState               uint64
+	LastPendingStateConsolidated   uint64
+	LastVerifiedBatchBeforeUpgrade uint64
+	RollupTypeID                   uint64
+	RollupCompatibilityID          uint8
+}
+
 func (r *RPCProvider) refreshRollups(ctx context.Context, c *ethclient.Client, contract *contracts.PolygonRollupManager, co *bind.CallOpts) {
 	if r.rollupManager.RollupCount == nil {
 		return
@@ -1315,7 +1334,7 @@ func (r *RPCProvider) refreshRollups(ctx context.Context, c *ethclient.Client, c
 			continue
 		}
 
-		r.refreshZkEVMEtrog(ctx, c, rollup.RollupContract, co, id, rollup.ChainID)
+		r.refreshZkEVMEtrog(ctx, c, co, id, rollup)
 	}
 }
 
@@ -1510,9 +1529,14 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 		}
 
 		if rollup.LastVerifiedBatch != nil {
-			if *rollup.LastVerifiedBatch >= event.NumBatch {
+			// Here, the last local exit roots are check instead of the last verified
+			// batch because some changes (pessimistic) don't expose to use the last
+			// verified batch.
+			if rollup.LastLocalExitRoot == event.ExitRoot {
 				continue
 			}
+
+			rollup.Pessimistic = event.NumBatch == 0 && event.StateRoot == [32]byte{}
 
 			// At this point rollup.LastVerifiedBatch and rollup.LastVerifiedTimestamp
 			// contain the data of the previous verified batch event, not the current
