@@ -1530,7 +1530,7 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 
 		if rollup.LastVerifiedBatch != nil {
 			// Here, the last local exit roots are checked instead of the last
-			// verified batch because some chains (pessimistic) don't expose the last
+			// verified batch because some chains (pessimistic) don't have the last
 			// verified batch.
 			if rollup.LastLocalExitRoot == event.ExitRoot {
 				continue
