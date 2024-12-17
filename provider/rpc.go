@@ -1164,7 +1164,7 @@ func runProvider(ctx context.Context, p *RPCProvider) {
 func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client, co *bind.CallOpts, rollupID uint32, rollup RollupData) error {
 	contract, err := contracts.NewPolygonZkEVMEtrog(rollup.RollupContract, c)
 	if err != nil {
-		r.logger.Error().Err(err).Msg("Unable to bind PolygonConsensusBase contract")
+		r.logger.Error().Err(err).Msg("Unable to bind zkEVM Etrog contract")
 		return nil
 	}
 
