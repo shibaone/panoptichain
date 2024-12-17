@@ -1536,8 +1536,6 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 				continue
 			}
 
-			rollup.Pessimistic = event.NumBatch == 0 && event.StateRoot == [32]byte{}
-
 			// At this point rollup.LastVerifiedBatch and rollup.LastVerifiedTimestamp
 			// contain the data of the previous verified batch event, not the current
 			// one (which is stored in event). This is used to calculate the time
@@ -1556,6 +1554,7 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 
 		rollup.LastVerifiedTimestamp = &time
 		rollup.LastVerifiedBatch = &event.NumBatch
+		rollup.Pessimistic = event.NumBatch == 0 && event.StateRoot == [32]byte{}
 
 		receipt, err := c.TransactionReceipt(ctx, event.Raw.TxHash)
 		if err != nil {
