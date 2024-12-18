@@ -1530,7 +1530,7 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 		pessimistic := event.NumBatch == 0 && event.StateRoot == [32]byte{}
 
 		if rollup.LastVerifiedBatch != nil {
-			// Here, pessimistic chains have to be handle differently because the
+			// Here, pessimistic chains have to be handled differently because the
 			// NumBatch will always be 0. The last verified timestamp is used to
 			// determine if the event has already been seen.
 			//
