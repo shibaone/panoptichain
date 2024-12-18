@@ -1173,7 +1173,6 @@ func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client
 	}
 
 	r.rollupManager.Rollups[rollupID].ChainID = &rollup.ChainID
-	r.rollupManager.Rollups[rollupID].LastLocalExitRoot = rollup.LastLocalExitRoot
 
 	lfb, err := contract.LastForceBatch(co)
 	if err != nil {
@@ -1528,11 +1527,21 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 			continue
 		}
 
+		pessimistic := event.NumBatch == 0 && event.StateRoot == [32]byte{}
+
 		if rollup.LastVerifiedBatch != nil {
-			// Here, the last local exit roots are checked instead of the last
-			// verified batch because some chains (pessimistic) don't have the last
-			// verified batch.
-			if rollup.LastLocalExitRoot == event.ExitRoot {
+			// Here, pessimistic chains have to be handle differently because the
+			// NumBatch will always be 0. The last verified timestamp is used to
+			// determine if the event has already been seen.
+			//
+			// There is an edge case here where if both events are included in the
+			// same block, there will be a missing time between verified batches
+			// event. This will be rare and won't significantly impact the metric.
+			if pessimistic && *rollup.LastVerifiedTimestamp >= time {
+				continue
+			}
+
+			if pessimistic && *rollup.LastVerifiedBatch >= event.NumBatch {
 				continue
 			}
 
@@ -1554,7 +1563,7 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 
 		rollup.LastVerifiedTimestamp = &time
 		rollup.LastVerifiedBatch = &event.NumBatch
-		rollup.Pessimistic = event.NumBatch == 0 && event.StateRoot == [32]byte{}
+		rollup.Pessimistic = pessimistic
 
 		receipt, err := c.TransactionReceipt(ctx, event.Raw.TxHash)
 		if err != nil {

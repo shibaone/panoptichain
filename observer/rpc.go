@@ -1125,9 +1125,8 @@ type RollupData struct {
 
 	TrustedSequencerBalances TokenBalances
 
-	ChainID           *uint64
-	LastLocalExitRoot [32]byte
-	Pessimistic       bool
+	ChainID     *uint64
+	Pessimistic bool
 }
 
 type RollupManagerObserver struct {
