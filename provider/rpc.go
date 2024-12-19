@@ -1161,8 +1161,8 @@ func runProvider(ctx context.Context, p *RPCProvider) {
 	}
 }
 
-func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client, address common.Address, co *bind.CallOpts, rollupID uint32, chainID uint64) error {
-	contract, err := contracts.NewPolygonZkEVMEtrog(address, c)
+func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client, co *bind.CallOpts, rollupID uint32, rollup RollupData) error {
+	contract, err := contracts.NewPolygonZkEVMEtrog(rollup.RollupContract, c)
 	if err != nil {
 		r.logger.Error().Err(err).Msg("Unable to bind zkEVM Etrog contract")
 		return nil
@@ -1172,7 +1172,7 @@ func (r *RPCProvider) refreshZkEVMEtrog(ctx context.Context, c *ethclient.Client
 		r.rollupManager.Rollups[rollupID] = &observer.RollupData{}
 	}
 
-	r.rollupManager.Rollups[rollupID].ChainID = &chainID
+	r.rollupManager.Rollups[rollupID].ChainID = &rollup.ChainID
 
 	lfb, err := contract.LastForceBatch(co)
 	if err != nil {
@@ -1303,6 +1303,24 @@ func (r *RPCProvider) refreshZkEVMContracts(contract *contracts.PolygonRollupMan
 	return nil
 }
 
+// RollupData is the struct returned by the RollupIDToRollupData method. This is
+// here because the abigen tool doesn't generate a named struct for this data.
+// Update this value if the response ever changes.
+type RollupData struct {
+	RollupContract                 common.Address
+	ChainID                        uint64
+	Verifier                       common.Address
+	ForkID                         uint64
+	LastLocalExitRoot              [32]byte
+	LastBatchSequenced             uint64
+	LastVerifiedBatch              uint64
+	LastPendingState               uint64
+	LastPendingStateConsolidated   uint64
+	LastVerifiedBatchBeforeUpgrade uint64
+	RollupTypeID                   uint64
+	RollupCompatibilityID          uint8
+}
+
 func (r *RPCProvider) refreshRollups(ctx context.Context, c *ethclient.Client, contract *contracts.PolygonRollupManager, co *bind.CallOpts) {
 	if r.rollupManager.RollupCount == nil {
 		return
@@ -1315,7 +1333,7 @@ func (r *RPCProvider) refreshRollups(ctx context.Context, c *ethclient.Client, c
 			continue
 		}
 
-		r.refreshZkEVMEtrog(ctx, c, rollup.RollupContract, co, id, rollup.ChainID)
+		r.refreshZkEVMEtrog(ctx, c, co, id, rollup)
 	}
 }
 
@@ -1509,8 +1527,21 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 			continue
 		}
 
+		pessimistic := event.NumBatch == 0 && event.StateRoot == [32]byte{}
+
 		if rollup.LastVerifiedBatch != nil {
-			if *rollup.LastVerifiedBatch >= event.NumBatch {
+			// Here, pessimistic chains are handled differently because the NumBatch
+			// will always be 0. The last verified timestamp is used to determine if
+			// the event has already been seen.
+			//
+			// There is an edge case here where if both events are included in the
+			// same block, there will be a missing time between verified batches
+			// event. This will be rare and won't significantly impact the metric.
+			if pessimistic && *rollup.LastVerifiedTimestamp >= time {
+				continue
+			}
+
+			if !pessimistic && *rollup.LastVerifiedBatch >= event.NumBatch {
 				continue
 			}
 
@@ -1532,6 +1563,7 @@ func (r *RPCProvider) refreshRollupVerifyBatchesTrustedAggregator(ctx context.Co
 
 		rollup.LastVerifiedTimestamp = &time
 		rollup.LastVerifiedBatch = &event.NumBatch
+		rollup.Pessimistic = pessimistic
 
 		receipt, err := c.TransactionReceipt(ctx, event.Raw.TxHash)
 		if err != nil {

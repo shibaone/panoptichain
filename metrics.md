@@ -639,6 +639,7 @@ Variable Labels:
 - network
 - provider
 - rollup
+- pessimistic
 
 ### panoptichain_rpc_zkevm_total_verified_batches
 The total number of verified batches

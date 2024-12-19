@@ -1125,7 +1125,8 @@ type RollupData struct {
 
 	TrustedSequencerBalances TokenBalances
 
-	ChainID *uint64
+	ChainID     *uint64
+	Pessimistic bool
 }
 
 type RollupManagerObserver struct {
@@ -1270,7 +1271,8 @@ func (o *RollupManagerObserver) notifyRollup(m Message, rollup *RollupData, id s
 
 	if rollup.LastVerifiedTimestamp != nil {
 		seconds := time.Since(time.Unix(int64(*rollup.LastVerifiedTimestamp), 0)).Seconds()
-		o.timeSinceLastVerified.WithLabelValues(m.Network().GetName(), m.Provider(), id).Set(seconds)
+		pessimistic := fmt.Sprint(rollup.Pessimistic)
+		o.timeSinceLastVerified.WithLabelValues(m.Network().GetName(), m.Provider(), id, pessimistic).Set(seconds)
 	}
 
 	for _, seconds := range rollup.TimeBetweenVerifiedBatches {
@@ -1342,6 +1344,7 @@ func (o *RollupManagerObserver) Register(eb *EventBus) {
 		"zkevm_time_since_last_verified",
 		"The time since the last verified batch (in seconds)",
 		"rollup",
+		"pessimistic",
 	)
 	o.totalVerifiedBatches = metrics.NewGauge(
 		metrics.RPC,
