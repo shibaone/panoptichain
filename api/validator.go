@@ -9,6 +9,8 @@ import (
 	"github.com/ethereum/go-ethereum/consensus/clique"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/0xPolygon/panoptichain/config"
 	"github.com/0xPolygon/panoptichain/network"
 )
 
@@ -45,15 +47,15 @@ var cache sync.Map
 // Validators queries the Heimdall API for the validator set. The validator set
 // is cached based on the refreshInterval.
 func Validators(n network.Network) ([]*Validator, error) {
-	var path string
-	switch n.GetName() {
-	case network.PolygonMainnetName:
-		path = "https://heimdall-api.polygon.technology"
-	case network.PolygonMumbaiName:
-		path = "https://heimdall-api-testnet.polygon.technology"
-	case network.PolygonAmoyName:
-		path = "https://heimdall-api-amoy.polygon.technology"
-	default:
+	var heimdallURL *string
+	for _, heimdall := range config.Config().Providers.HeimdallEndpoints {
+		if heimdall.Name == n.GetName() {
+			heimdallURL = &heimdall.HeimdallURL
+			break
+		}
+	}
+
+	if heimdallURL == nil {
 		return nil, errors.New("no validators for this network")
 	}
 
@@ -69,7 +71,7 @@ func Validators(n network.Network) ([]*Validator, error) {
 		}
 	}
 
-	path, err := url.JoinPath(path, "staking/validator-set")
+	path, err := url.JoinPath(*heimdallURL, "staking/validator-set")
 	if err != nil {
 		return nil, err
 	}

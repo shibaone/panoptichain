@@ -36,17 +36,15 @@ http:
 # observe. These are the currently known networks. See ./network/network.go for
 # details.
 #
-# - "Polygon Mumbai"
-#	- "Heimdall Mumbai"
+# - "Polygon Amoy"
+#	- "Heimdall Amoy"
 # - "Polygon Mainnet"
 # - "Heimdall Mainnet"
 #	- "zkEVM Mainnet"
-# - "zkEVM Testnet"
 # - "zkEVM Cardona"
 # - "zkEVM Bali"
 # - "Ethereum"
 # - "Sepolia"
-# - "Goerli"
 #
 # If you wish to have a custom network name, you should define those in the
 # network section in this file.
@@ -266,6 +264,19 @@ providers:
   # The intervals for these providers are on a shorter interval to prevent
   # missing data. The heimdall APIs only allows us to fetch the current state,
   # not the previous, so a longer interval may skip over some events.
+  #
+  # The `rpc` and `heimdall` providers have some co-dependency. For the PoS
+  # `rpc` providers, ensure that you have the `heimdall` providers set. As there
+  # will be calls to fetch the validators. See `/api/validator.go` for more
+  # context. These observers require the both providers to be set:
+  # - "bogon_block"
+  # - "validator_wallet_balance"
+  #
+  # A similar situation occurs for `sensor_network` providers as well. These
+  # observers require the both providers to be set:
+  # - "sensor_bogon_block"
+  # - "sealed_out_of_turn"
+  # - "double_sign"
   heimdall:
     - name: "Polygon Mainnet"
       tendermint_url: "https://tendermint-api.polygon.technology"
