@@ -558,12 +558,32 @@ func (r *RPCProvider) getBlockByNumber(ctx context.Context, n *big.Int, c *ethcl
 		return nil, err
 	}
 
-	transactions := body["transactions"].([]any)
+	transactions, ok := body["transactions"].([]any)
+	if !ok {
+		return nil, errors.New("transactions type assertion failed")
+	}
+
 	for _, tx := range transactions {
-		tx := tx.(map[string]any)
+		tx, ok := tx.(map[string]any)
+		if !ok {
+			continue
+		}
+
+		hex, ok := tx["type"].(string)
+		if !ok {
+			continue
+		}
+
+		decimal, err := hexutil.DecodeUint64(hex)
+		if err != nil {
+			log.Warn().Err(err).Send()
+		}
+
 		// Remove the transaction type field which would allow the transaction to be
 		// treated as legacy.
-		delete(tx, "type")
+		if decimal > 3 {
+			delete(tx, "type")
+		}
 	}
 
 	bytes, err := json.Marshal(body)
