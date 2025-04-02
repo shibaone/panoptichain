@@ -252,7 +252,7 @@ providers:
     interval: 30
 
   # @param heimdall - object - optional
-  # The Heimdall provider fetches data from Heimdall and Tendermint APIs. Use a
+  # The `heimdall` provider fetches data from Heimdall and Tendermint APIs. Use a
   # shorter interval with these providers to prevent missing data.
   #
   # `rpc` and `heimdall` providers have some co-dependency. These observers will
