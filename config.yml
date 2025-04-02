@@ -9,7 +9,7 @@ namespace: "panoptichain"
 
 # @param runner - object - required
 runner:
-  # @param interval - integer- required
+  # @param interval - integer - required
   # @env PANOPTICHAIN_RUNNER_INTERVAL - integer - required
   # The default polling interval, in seconds, for providers. If a provider's
   # interval is not set, this value is used.
@@ -53,7 +53,7 @@ logs:
   # - "fatal"
   verbosity: "trace"
 
-# @param neworks - object - optional
+# @param networks - object - optional
 # Define any custom networks here. These can then be referenced in a provider's
 # `name` field. The networks below are defined by default:
 # - "Polygon Mainnet"
@@ -136,8 +136,8 @@ providers:
 
       # @param block_look_back - integer - optional - default 1000
       # @env PANOPTICHAIN_PROVIDERS_RPC_0_BLOCK_LOOK_BACK - integer - optional - default 1000
-      # The number of blocks too query for logs to populate metrics. Setting
-      # this value to 0 will not populate metrics with any historical data.
+      # The number of blocks to query for logs to populate metrics. Setting this
+      # value to 0 will not populate metrics with any historical data.
       block_look_back: 1000
 
       # @param accounts - list of strings - optional
@@ -171,7 +171,7 @@ providers:
     - name: "zkEVM Cardona"
       url: "https://rpc.cardona.zkevm-rpc.com"
 
-      # Prepending the label it with something like `ttm` or `time to mine` will
+      # Prepending the label with something like `ttm` or `time to mine` will
       # help differentiate the metrics among the other providers with the same
       # network.
       label: "time-to-mine.zkevm-rpc.com"
@@ -182,7 +182,7 @@ providers:
 
       # @param time_to_mine - object - optional
       # The `time_to_mine` configuration. This will periodically send
-      # transactions and record the time it took to to be included in a block.
+      # transactions and record the time it took to be included in a block.
       time_to_mine:
         ## @param sender - string - required
         ## @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_SENDER
@@ -241,7 +241,7 @@ providers:
   # `rpc` providers with the same network.
   hash_divergence:
     # @param interval - integer - optional - default: runner.interval
-    # @param PANOPTICHAIN_PROVIERS_HASH_DIVERGENCE_INTERVAL - integer - optional - default: runner.interval
+    # @param PANOPTICHAIN_PROVIDERS_HASH_DIVERGENCE_INTERVAL - integer - optional - default: runner.interval
     interval: 30
 
   # @param heimdall - object - optional
