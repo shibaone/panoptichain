@@ -1,0 +1,24 @@
+@startuml docker-compose-architecture
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Panoptichain Docker Compose Architecture
+
+System(zkevm, "zkEVM")
+System_Ext(ethereum, "Ethereum")
+System_Boundary(posv1, "PoSv1") {
+  Container(bor, "Bor")
+  Container(heimdall, "Heimdall")
+}
+
+Container(panoptichain, "Panoptichain")
+Container(grafana, "Grafana")
+Container(prometheus, "Prometheus")
+
+Rel(panoptichain, zkevm, "Uses", "rpc")
+Rel(panoptichain, ethereum, "Uses", "rpc")
+Rel(panoptichain, bor, "Uses", "rpc")
+Rel(panoptichain, heimdall, "Uses", "https")
+Rel(prometheus, panoptichain, "Scrapes", "https")
+Rel(grafana, prometheus, "Reads", "https")
+
+@enduml

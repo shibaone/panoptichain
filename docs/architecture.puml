@@ -14,7 +14,6 @@ System_Boundary(posv1, "PoSv1") {
 
 System_Boundary(gke, "Google Kubernetes Engine") {
   Container(panoptichain, "Panoptichain")
-  Container(panoptichain_cdk, "Panoptichain-CDK")
   Container(dd_agent, "Datadog Agent")
   Container(grafana, "Grafana")
   Container(prometheus, "Prometheus")
@@ -37,10 +36,5 @@ Rel(dd_agent, datadog, "Writes", "https")
 Rel(prometheus, coralogix, "Writes", "https")
 Rel(datadog, slack, "Alerts", "https")
 Rel(sensor_network, bor, "Peers", "devp2p")
-
-Rel(prometheus, panoptichain_cdk, "Scrapes", "https")
-Rel(dd_agent, panoptichain_cdk, "Scrapes", "https")
-Rel(panoptichain_cdk, zkevm, "Uses", "rpc")
-Rel(panoptichain_cdk, ethereum, "Uses", "rpc")
 
 @enduml
