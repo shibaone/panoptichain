@@ -106,7 +106,7 @@ providers:
     - name: "Polygon Mainnet"
 
       # @param url - string - required
-      # @env PANOPTICHAIN_PROVIDERS_RPC_0_NAME - string - required
+      # @env PANOPTICHAIN_PROVIDERS_RPC_0_URL - string - required
       # The RPC URL endpoint.
       url: "https://polygon-rpc.com"
 
@@ -271,7 +271,7 @@ providers:
       tendermint_url: "https://tendermint-api.polygon.technology"
 
       # @param heimdall_url - string - required
-      # @env PANOPTICHAIN_HEIMDALL_0_HEIMDALL_URL - string - required
+      # @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_HEIMDALL_URL - string - required
       # The Heimdall URL.
       heimdall_url: "https://heimdall-api.polygon.technology"
 
