@@ -195,17 +195,17 @@ providers:
         ## @param sender - string - required
         ## @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_SENDER
         ## The sender address.
-        # sender: ""
+        sender: "0x0000000000000000000000000000000000000000"
 
         # @param sender_private_key - string - required
         # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_SENDER_PRIVATE_KEY
         # The sender private key.
-        sender_private_key: ""
+        sender_private_key: "0x0000000000000000000000000000000000000000"
 
         # @param receiver - string - required
         # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_RECEIVER
         # The receiver address.
-        receiver: ""
+        receiver: "0x0000000000000000000000000000000000000000"
 
         # @param value - integer - required
         # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_VALUE
