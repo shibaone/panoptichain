@@ -2,400 +2,426 @@
 ## Panoptichain Configuration ##
 ################################
 
-# @param namespace - string - required
-# @env PANOPTICHAIN_NAMESPACE - string - required
-# Metrics will be prefixed with this namespace.
-namespace: "panoptichain"
+## @param namespace - string - optional - default "panoptichain"
+## @env PANOPTICHAIN_NAMESPACE - string - optional - default "panoptichain"
+## Metrics will be prefixed with this namespace.
+#
+# namespace: "panoptichain"
 
-# @param runner - object - required
-runner:
-  # @param interval - integer - required
-  # @env PANOPTICHAIN_RUNNER_INTERVAL - integer - required
-  # The default polling interval, in seconds, for providers. If a provider's
-  # interval is not set, this value is used.
-  interval: 30
-
-# @param http - object - required
-# The metrics HTTP endpoint.
-http:
-  # @param port - integer - required
-  # @env PANOPTICHAIN_HTTP_PORT - integer - required
-  # Port on which panoptichain will run.
-  port: 9090
-
-  # @param address - string - required
-  # @env PANOPTICHAIN_HTTP_ADDRESS - string - required
-  # Bind address. Change to "0.0.0.0" or "" when running in a container.
-  address: "localhost"
-
-  # @param path - string - required
-  # @env PANOPTICHAIN_HTTP_PATH - string - required
-  # Path for accessing Prometheus metrics (e.g., http://localhost:9090/metrics).
-  path: "/metrics"
-
-# @param logs - object - optional
-# The logging configuration.
-logs:
-  # @param pretty - boolean - optional - default false
-  # @env PANOPTICHAIN_LOGS_PRETTY - boolean - optional - default false
-  # Whether to pretty print logs. If false, logs will be printed as JSON.
-  pretty: true
-
-  # @param verbosity - string - optional - default "trace"
-  # @env PANOPTICHAIN_LOGS_VERBOSITY - string - optional - default "trace"
-  # Set the log level. The possible log levels are:
-  # - "trace"
-  # - "debug"
-  # - "info"
-  # - "warn"
-  # - "error"
-  # - "panic"
-  # - "fatal"
-  verbosity: "trace"
-
-# @param networks - object - optional
-# Define any custom networks here. These can then be referenced in a provider's
-# `name` field. The networks below are defined by default:
-# - "Polygon Mainnet"
-# - "Polygon Mumbai"
-# - "Polygon Amoy"
-# - "Heimdall Mainnet"
-# - "Heimdall Mumbai"
-# - "Heimdall Amoy"
-# - "zkEVM Mainnet"
-# - "zkEVM Testnet"
-# - "zkEVM Cardona"
-# - "zkEVM Bali"
-# - "Ethereum"
-# - "Sepolia"
-# - "Goerli"
-networks:
-  # @param name - string - optional
-  # @env PANOPTICHAIN_NETWORKS_0_NAME - string - optional
-  # The name of the network.
-  - name: "Local Dev"
-
-    # @param chain_id - string - optional
-    # @env PANOPTICHAIN_NETWORKS_0_CHAIN_ID - string - optional
-    # The network chain ID.
-    chain_id: 1337
-
-# @param providers - object - optional
-# Providers fetch data from various sources and handle state storage. The
-# available provider types include:
-# - system
-# - rpc
-# - hash_divergence
-# - heimdall
-# - sensor_network
-# - exchange_rates
-providers:
-  # @param system - object - optional
-  # The `system` provider captures Panoptichain level system metrics.
-  system:
-    # @param interval - integer - optional - default: runner.interval
-    # @param PANOPTICHAIN_PROVIDERS_SYSTEM_INTERVAL - integer - optional - default: runner.interval
-    interval: 30
-
-  # @param rpc - object - optional
-  # The `rpc` provider fetches data from an Ethereum-based RPC server.
-  rpc:
-    # @param name - string - required
-    # @env PANOPTICHAIN_PROVIDERS_RPC_0_NAME - string - required
-    # The network name. See `networks` for the list of predefined networks.
-    - name: "Polygon Mainnet"
-
-      # @param url - string - required
-      # @env PANOPTICHAIN_PROVIDERS_RPC_0_URL - string - required
-      # The RPC URL endpoint.
-      url: "https://polygon-rpc.com"
-
-      # @param label - string - required
-      # @env PANOPTICHAIN_PROVIDERS_RPC_0_LABEL - string - required
-      # The label for this provider. This field helps distinguish providers from
-      # each another without exposing the underlying RPC URL.
-      label: "polygon-rpc.com"
-
-      # @param interval - integer - optional - default: runner.interval
-      # @param PANOPTICHAIN_PROVIDERS_RPC_0_INTERVAL - integer - optional - default: runner.interval
-      interval: 30
-
-      # @param contracts - object - optional
-      # Observe specific smart contracts. The list of all supported contracts
-      # are:
-      # - checkpoint_address            (PoS, L1)
-      # - state_sync_sender_address     (PoS, L1)
-      # - state_sync_receiver_address   (PoS, L2)
-      # - rollup_manager_address        (zkEVM, L1)
-      # - zkevm_bridge_address          (zkEVM, L2)
-      # - global_exit_root_l2_address   (zkEVM, L2)
-      contracts:
-        # @param state_sync_receiver_address - string - optional
-        # @env PANOPTICHAIN_PROVIDERS_RPC_0_CONTRACTS_STATE_SYNC_RECEIVER_ADDRESS - string - optional
-        state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
-
-      # @param block_look_back - integer - optional - default 1000
-      # @env PANOPTICHAIN_PROVIDERS_RPC_0_BLOCK_LOOK_BACK - integer - optional - default 1000
-      # The number of blocks to query for logs to populate metrics. Setting this
-      # value to 0 will not populate metrics with any historical data.
-      block_look_back: 1000
-
-      # @param accounts - list of strings - optional
-      # @env PANOPTICHAIN_PROVIDERS_RPC_0_ACCOUNTS - list of strings - optional
-      # Query the balance of certain accounts.
-      accounts:
-        - "0xa0c68c638235ee32657e8f720a23cec1bfc77c77"
-
-    - name: "Polygon Amoy"
-      url: "https://rpc-amoy.polygon.technology/"
-      label: "polygon.technology"
-      contracts:
-        state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
-
-    - name: "zkEVM Mainnet"
-      url: "https://zkevm-rpc.com"
-      label: "zkevm-rpc.com"
-      contracts:
-        global_exit_root_l2_address: "0xa40D5f56745a118D0906a34E69aeC8C0Db1cB8fA"
-        zkevm_bridge_address: "0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe"
-
-    - name: "zkEVM Cardona"
-      url: "https://rpc.cardona.zkevm-rpc.com"
-      label: "zkevm-rpc.com"
-      contracts:
-        global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
-        zkevm_bridge_address: "0x528e26b25a34a4A5d0dbDa1d57D318153d2ED582"
-
-    # `rpc` providers can be configured with a time to mine metric. Here's an
-    # example `rpc` provider tailored for this use case.
-    - name: "zkEVM Cardona"
-      url: "https://rpc.cardona.zkevm-rpc.com"
-
-      # Prepending the label with something like `ttm` or `time to mine` will
-      # help differentiate the metrics among the other providers with the same
-      # network.
-      label: "time-to-mine.zkevm-rpc.com"
-
-      # Use a higher interval than normal to prevent wallet funds from being
-      # drained too fast.
-      interval: 150
-
-      # @param time_to_mine - object - optional
-      # The `time_to_mine` configuration. This will periodically send
-      # transactions and record the time it took to be included in a block.
-      time_to_mine:
-        ## @param sender - string - required
-        ## @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_SENDER
-        ## The sender address.
-        sender: "0x0000000000000000000000000000000000000000"
-
-        # @param sender_private_key - string - required
-        # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_SENDER_PRIVATE_KEY
-        # The sender private key.
-        sender_private_key: "0x0000000000000000000000000000000000000000"
-
-        # @param receiver - string - required
-        # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_RECEIVER
-        # The receiver address.
-        receiver: "0x0000000000000000000000000000000000000000"
-
-        # @param value - integer - required
-        # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_VALUE
-        # The value to send in gwei.
-        value: 10000000000000 # 0.00001 ether
-
-        # @param gas_limit - integer - required
-        # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_GAS_LIMIT
-        # The gas limit of the transaction.
-        gas_limit: 21000
-
-        # @param gas_price_factor - integer - optional - default 1
-        # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_GAS_PRICE_FACTOR
-        # The gas price factor specifies how much to multiply the gas price by.
-        gas_price_factor: 3
-
-        # @param data - string - optional - default ""
-        # @env PANOPTICHAIN_PROVIDERS_RPC_4_TIME_TO_MINE_DATA
-        # The transaction ABI-encoded data.
-        data: ""
-
-    - name: "Ethereum"
-      url: "https://ethereum-rpc.publicnode.com"
-      label: "publicnode.com"
-      contracts:
-        state_sync_sender_address: "0x28e4F3a7f651294B9564800b2D01f35189A5bFbE"
-        checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
-        rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
-
-    - name: "Sepolia"
-      url: "https://ethereum-sepolia.publicnode.com"
-      label: "publicnode.com"
-      contracts:
-        state_sync_sender_address: "0x49E307Fa5a58ff1834E0F8a60eB2a9609E6A5F50"
-        checkpoint_address: "0xbd07D7E1E93c8d4b2a261327F3C28a8EA7167209"
-        rollup_manager_address: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-
-  # @param hash_divergence - object - optional
-  # The `hash_divergence` provider tracks whether block numbers from the same
-  # network have different hashes. This provider depends on having multiple
-  # `rpc` providers with the same network.
-  hash_divergence:
-    # @param interval - integer - optional - default: runner.interval
-    # @param PANOPTICHAIN_PROVIDERS_HASH_DIVERGENCE_INTERVAL - integer - optional - default: runner.interval
-    interval: 30
-
-  # @param heimdall - object - optional
-  # The `heimdall` provider fetches data from Heimdall and Tendermint APIs. Use
-  # a shorter interval with these providers to prevent missing data.
+## @param runner - object - optional
+## The runner object.
+#
+# runner:
+#
+  ## @param interval - integer - optional - default 30
+  ## @env PANOPTICHAIN_RUNNER_INTERVAL - integer - optional - default 30
+  ## The default polling interval, in seconds, for providers. If a provider's
+  ## interval is not set, this value is used.
   #
-  # `rpc` and `heimdall` providers have some co-dependency. These observers will
-  # require a `rpc` and `heimdall` provider to be defined for a Polygon PoS
-  # network:
-  # - "bogon_block"
-  # - "validator_wallet_balance"
+  # interval: 30
+
+## @param http - object - optional
+## The metrics HTTP endpoint.
+#
+# http:
+#
+  ## @param port - integer - optional - default 9090
+  ## @env PANOPTICHAIN_HTTP_PORT - integer - optional - default 9090
+  ## Port on which the metrics server will run.
   #
-  # `sensor_network` and `heimdall` providers have some co-dependency. These
-  # observers will require a `sensor_network` and `heimdall` provider to be
-  # defined for a Polygon PoS network:
-  # - "sensor_bogon_block"
-  # - "sealed_out_of_turn"
-  # - "double_sign"
-  heimdall:
-    # @param name - string - required
-    # @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_NAME - string - required
-    - name: "Polygon Mainnet"
+  # port: 9090
+  #
+  ## @param address - string - optional - default "localhost"
+  ## @env PANOPTICHAIN_HTTP_ADDRESS - string - optional - default "localhost"
+  ## Bind address. Change to "0.0.0.0" or "" when running in a container.
+  #
+  # address: "localhost"
+  #
+  ## @param path - string - optional - default "/metrics"
+  ## @env PANOPTICHAIN_HTTP_PATH - string - optional - default "/metrics"
+  ## Path to serve Prometheus metrics (e.g., http://localhost:9090/metrics).
+  #
+  # path: "/metrics"
 
-      # @param tendermint_url - string - required
-      # @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_TENDERMINT_URL - string - required
-      # The Tendermint URL.
-      tendermint_url: "https://tendermint-api.polygon.technology"
+## @param logs - object - optional
+## The logging configuration.
+#
+# logs:
+#
+  ## @param pretty - boolean - optional - default false
+  ## @env PANOPTICHAIN_LOGS_PRETTY - boolean - optional - default false
+  ## Whether to pretty-print logs. If false, logs will be printed as JSON.
+  #
+  # pretty: true
+  #
+  ## @param verbosity - string - optional - default "info"
+  ## @env PANOPTICHAIN_LOGS_VERBOSITY - string - optional - default "info"
+  ## Set the log level. The possible log levels are:
+  ## - "trace"
+  ## - "debug"
+  ## - "info"
+  ## - "warn"
+  ## - "error"
+  ## - "panic"
+  ## - "fatal"
+  #
+  # verbosity: "trace"
 
-      # @param heimdall_url - string - required
-      # @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_HEIMDALL_URL - string - required
-      # The Heimdall URL.
-      heimdall_url: "https://heimdall-api.polygon.technology"
+## @param networks - list of objects - optional
+## Define any custom networks here. These can then be referenced in a provider's
+## `name` field. The networks below are defined by default:
+## - "Polygon Mainnet"
+## - "Polygon Mumbai"
+## - "Polygon Amoy"
+## - "Heimdall Mainnet"
+## - "Heimdall Mumbai"
+## - "Heimdall Amoy"
+## - "zkEVM Mainnet"
+## - "zkEVM Testnet"
+## - "zkEVM Cardona"
+## - "zkEVM Bali"
+## - "Ethereum"
+## - "Sepolia"
+## - "Goerli"
+#
+# networks:
+#
+  ## @param name - string - required
+  ## @env PANOPTICHAIN_NETWORKS_0_NAME - string - required
+  ## The name of the network.
+  #
+  # - name: "Local Dev"
+  # 
+  ## @param chain_id - string - optional
+  ## @env PANOPTICHAIN_NETWORKS_0_CHAIN_ID - string - optional
+  ## The network chain ID.
+  #
+  #   chain_id: 1337
 
-      # @param label - string - required
-      # @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_LABEL - string - required
-      # The label for this `heimdall` provider. This field helps distinguish
-      # providers from each another without exposing the underlying URLs.
-      label: "polygon.technology"
+## @param providers - object - optional
+## Providers fetch data from various sources and handle state storage. The
+## available provider types include:
+## - system
+## - rpc
+## - hash_divergence
+## - heimdall
+## - sensor_network
+## - exchange_rates
+#
+# providers:
+#
+  ## @param system - object - optional
+  ## The `system` provider captures system-level metrics.
+  #
+  # system:
+  #
+    ## @param interval - integer - optional - default: runner.interval
+    ## @env PANOPTICHAIN_PROVIDERS_SYSTEM_INTERVAL - integer - optional - default: runner.interval
+    ## The polling interval of the `system` provider.
+    #
+    # interval: 30
 
-      # @param interval - integer - optional - default: runner.interval
-      # @param PANOPTICHAIN_PROVIDERS_HEIMDALL_0_INTERVAL - integer - optional - default: runner.interval
-      interval: 5
+  ## @param rpc - list of objects - optional
+  ## The `rpc` provider fetches data from an Ethereum-based RPC server.
+  ##
+    ## @param name - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_RPC_0_NAME - string - required
+    ## The network name. See `networks` for the list of predefined networks.
+    ##
+    ## @param url - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_RPC_0_URL - string - required
+    ## The RPC URL endpoint.
+    ##
+    ## @param label - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_RPC_0_LABEL - string - required
+    ## The label for this provider. This field helps distinguish providers from
+    ## each other without exposing the underlying RPC URL.
+    ##
+    ## @param interval - integer - optional - default: runner.interval
+    ## @env PANOPTICHAIN_PROVIDERS_RPC_0_INTERVAL - integer - optional - default: runner.interval
+    ## The polling interval of the `rpc` provider.
+    ##
+    ## @param contracts - object - optional
+    ## Observe specific smart contracts. The list of all supported contracts
+    ## is:
+    ## - checkpoint_address            (PoS, L1)
+    ## - state_sync_sender_address     (PoS, L1)
+    ## - state_sync_receiver_address   (PoS, L2)
+    ## - rollup_manager_address        (zkEVM, L1)
+    ## - zkevm_bridge_address          (zkEVM, L2)
+    ## - global_exit_root_l2_address   (zkEVM, L2)
+    ##
+    ## @param block_look_back - integer - optional - default 1000
+    ## @env PANOPTICHAIN_PROVIDERS_RPC_0_BLOCK_LOOK_BACK - integer - optional - default 1000
+    ## The number of blocks to query for logs to populate metrics. Setting this
+    ## value to 0 will not populate metrics with any historical data.
+    ##
+    ## @param accounts - list of strings - optional
+    ## @env PANOPTICHAIN_PROVIDERS_RPC_0_ACCOUNTS - list of strings - optional
+    ## Query the balance of specific accounts.
+    ##
+    ## @param time_to_mine - object - optional
+    ## The `time_to_mine` configuration. This will periodically send
+    ## transactions and record the time it took to be included in a block. If
+    ## this is configured, consider prepending the `label` with something like
+    ## `time-to-mine` or `ttm` to differentiate it. A higher `interval` is
+    ## recommended to prevent wallet funds from being drained too quickly.
+    ##
+      ## @param sender - string - required
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_SENDER
+      ## The sender address.
+      ##
+      ## @param sender_private_key - string - required
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_SENDER_PRIVATE_KEY
+      ## The sender private key.
+      ##
+      ## @param receiver - string - required
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_RECEIVER
+      ## The receiver address.
+      ##
+      ## @param value - integer - required
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_VALUE
+      ## The value to send in gwei.
+      ##
+      ## @param gas_limit - integer - required
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_GAS_LIMIT
+      ## The gas limit of the transaction.
+      ##
+      ## @param gas_price_factor - integer - optional - default 1
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_GAS_PRICE_FACTOR
+      ## The gas price factor specifies how much to multiply the gas price by.
+      ##
+      ## @param data - string - optional - default ""
+      ## @env PANOPTICHAIN_PROVIDERS_RPC_0_TIME_TO_MINE_DATA
+      ## The transaction ABI-encoded data.
+  #
+  # rpc:
+  #   - name: "Polygon Mainnet"
+  #     url: "https://polygon-rpc.com"
+  #     label: "polygon-rpc.com"
+  #     contracts:
+  #       state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
+  #
+  #   - name: "Polygon Amoy"
+  #     url: "https://rpc-amoy.polygon.technology/"
+  #     label: "polygon.technology"
+  #     contracts:
+  #       state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
+  #
+  #   - name: "zkEVM Mainnet"
+  #     url: "https://zkevm-rpc.com"
+  #     label: "zkevm-rpc.com"
+  #     contracts:
+  #       global_exit_root_l2_address: "0xa40D5f56745a118D0906a34E69aeC8C0Db1cB8fA"
+  #       zkevm_bridge_address: "0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe"
+  #
+  #   - name: "zkEVM Cardona"
+  #     url: "https://rpc.cardona.zkevm-rpc.com"
+  #     label: "zkevm-rpc.com"
+  #     contracts:
+  #       global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
+  #       zkevm_bridge_address: "0x528e26b25a34a4A5d0dbDa1d57D318153d2ED582"
+  #
+  #   - name: "Ethereum"
+  #     url: "https://ethereum-rpc.publicnode.com"
+  #     label: "publicnode.com"
+  #     contracts:
+  #       state_sync_sender_address: "0x28e4F3a7f651294B9564800b2D01f35189A5bFbE"
+  #       checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
+  #       rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
+  #
+  #   - name: "Sepolia"
+  #     url: "https://ethereum-sepolia.publicnode.com"
+  #     label: "publicnode.com"
+  #     contracts:
+  #       state_sync_sender_address: "0x49E307Fa5a58ff1834E0F8a60eB2a9609E6A5F50"
+  #       checkpoint_address: "0xbd07D7E1E93c8d4b2a261327F3C28a8EA7167209"
+  #       rollup_manager_address: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
 
-    - name: "Polygon Amoy"
-      tendermint_url: "https://tendermint-api-amoy.polygon.technology"
-      heimdall_url: "https://heimdall-api-amoy.polygon.technology"
-      label: "polygon.technology"
-      interval: 5
+  ## @param hash_divergence - object - optional
+  ## The `hash_divergence` provider tracks whether block numbers from the same
+  ## network have different hashes. This provider depends on having multiple
+  ## `rpc` providers with the same network.
+  #
+  # hash_divergence:
+  #
+    ## @param interval - integer - optional - default: runner.interval
+    ## @env PANOPTICHAIN_PROVIDERS_HASH_DIVERGENCE_INTERVAL - integer - optional - default: runner.interval
+    ## The polling interval for the `hash_divergence` provider.
+    #
+    # interval: 30
 
-  # @param sensor_network - object - optional
-  # The `sensor_network` provider fetches data from GCP Datastore. Remove these
-  # providers completely if Panoptichain isn't being run in GCP.
-  sensor_network:
-    # @param name - string - required
-    # @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_NAME - string - required
-    - name: "Polygon Mainnet"
+  ## @param heimdall - list of objects - optional
+  ## The `heimdall` provider fetches data from Heimdall and Tendermint APIs. Use
+  ## a shorter interval with these providers to prevent missing data.
+  ##
+  ## `rpc` and `heimdall` providers have some interdependence. These observers will
+  ## require both `rpc` and `heimdall` providers to be defined for a Polygon PoS
+  ## network:
+  ## - "bogon_block"
+  ## - "validator_wallet_balance"
+  ##
+  ## `sensor_network` and `heimdall` providers also have some interdependence.
+  ## These observers will require both `sensor_network` and `heimdall` providers to be
+  ## defined for a Polygon PoS network:
+  ## - "sensor_bogon_block"
+  ## - "sealed_out_of_turn"
+  ## - "double_sign"
+  ##
+    ## @param name - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_NAME - string - required
+    ## The network name. See `networks` for the list of predefined networks.
+    ##
+    ## @param tendermint_url - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_TENDERMINT_URL - string - required
+    ## The Tendermint URL.
+    ##
+    ## @param heimdall_url - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_HEIMDALL_URL - string - required
+    ## The Heimdall URL.
+    ##
+    ## @param label - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_LABEL - string - required
+    ## A label for this `heimdall` provider. This field helps distinguish
+    ## providers from one another without exposing the underlying URLs.
+    ##
+    ## @param interval - integer - optional - default: runner.interval
+    ## @env PANOPTICHAIN_PROVIDERS_HEIMDALL_0_INTERVAL - integer - optional - default: runner.interval
+    ## The polling interval for the `heimdall` provider.
+  #
+  # heimdall:
+  #   - name: "Polygon Mainnet"
+  #     tendermint_url: "https://tendermint-api.polygon.technology"
+  #     heimdall_url: "https://heimdall-api.polygon.technology"
+  #     label: "polygon.technology"
+  #     interval: 5
+  #
+  #   - name: "Polygon Amoy"
+  #     tendermint_url: "https://tendermint-api-amoy.polygon.technology"
+  #     heimdall_url: "https://heimdall-api-amoy.polygon.technology"
+  #     label: "polygon.technology"
+  #     interval: 5
 
-      # @param project - string - required
-      # @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_PROJECT - string - required
-      project: "prj-polygonlabs-devtools-dev"
+  ## @param sensor_network - list of objects - optional
+  ## The `sensor_network` provider fetches data from GCP Datastore. Remove these
+  ## providers entirely if this isn't being run in GCP.
+  ##
+    ## @param name - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_NAME - string - required
+    ## The network name. See `networks` for the list of predefined networks.
+    ##
+    ## @param project - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_PROJECT - string - required
+    ## The GCP project.
+    ##
+    ## @param database - string - optional - default ""
+    ## @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_DATABASE - string - optional - default ""
+    ## The GCP Datastore database.
+    ##
+    ## @param label - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_LABEL - string - required
+    ## The label for this provider. This field helps distinguish providers from
+    ## each other.
+  #
+  # sensor_network:
+  #   - name: "Polygon Mainnet"
+  #     project: "prj-polygonlabs-devtools-dev"
+  #     database: ""
+  #     label: "sensor-network"
+  #
+  #   - name: "Polygon Amoy"
+  #     project: "prj-polygonlabs-devtools-dev"
+  #     database: "amoy"
+  #     label: "sensor-network"
 
-      # @param database - string - optional - default ""
-      # @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_DATABASE - string - optional - default ""
-      database: ""
+  ## @param exchange_rates - object - optional
+  ## The `exchange_rates` provider fetches data from the Coinbase API. This is
+  ## helpful when performing conversion rate computations in an observability backend.
+  #
+  # exchange_rates:
+  #
+    ## @param coinbase_url - string - required
+    ## @env PANOPTICHAIN_PROVIDERS_EXCHANGE_RATES_COINBASE_URL - string - required
+    #
+    # coinbase_url: https://api.coinbase.com/v2/exchange-rates?currency=
+    #
+    ## @param tokens - map - optional
+    ## Map a base currency to a list of quote currencies using ticker symbols.
+    #
+    # tokens:
+    #   eth:
+    #     - usd
+    #     - eur
+    #   pol:
+    #     - usd
+    #     - eur
 
-      # @param label - string - required
-      # @env PANOPTICHAIN_PROVIDERS_SENSOR_NETWORK_0_LABEL - string - required
-      label: "sensor-network"
-
-    - name: "Polygon Amoy"
-      project: "prj-polygonlabs-devtools-dev"
-      database: "amoy"
-      label: "sensor-network"
-
-  # @param exchange_rates - object - optional
-  # The `exchange_rates` provider fetches data from the Coinbase API. This is
-  # helpful when doing conversion rate computations in an observability backend.
-  exchange_rates:
-    # @param coinbase_url - string - required
-    # @env PANOPTICHAIN_PROVIDERS_EXCHANGE_RATES_COINBASE_URL - string - required
-    coinbase_url: https://api.coinbase.com/v2/exchange-rates?currency=
-
-    # @param tokens - map - optional
-    # Map a base currency to a list of quote currencies using ticker symbols.
-    tokens:
-      eth:
-        - usd
-        - eur
-      pol:
-        - usd
-        - eur
-
-# @param observers - object - optional
-# Observers control what metrics will be emitted. By default all observers are
-# enabled unless specifically disabled.
-observers:
-  # @param disabled - list of strings - optional
-  # @env PANOPTICHAIN_OBSERVERS_DISABLED - list of strings - optional
-  # Disable certain observers from the observer list.
-  disabled:
-
-  # @param enabled - list of strings - optional
-  # @env PANOPTICHAIN_OBSERVERS_ENABLED - list of strings - optional - default enable all observers
-  # Enable only certain observers. Below are all available observers:
-  enabled:
-    - "account_balances"
-    - "base_fee_per_gas"
-    - "block"
-    - "block_interval"
-    - "bogon_block"
-    - "bridge_event"
-    - "checkpoint"
-    - "claim_event"
-    - "deposit_counts"
-    - "double_sign"
-    - "empty_block"
-    - "exchange_rates"
-    - "exit_roots"
-    - "gas_limit"
-    - "gas_used"
-    - "hash_divergence"
-    - "heimdall_block_interval"
-    - "heimdall_checkpoint"
-    - "heimdall_height"
-    - "heimdall_missed_block_proposal"
-    - "heimdall_missed_checkpoint_proposal"
-    - "heimdall_missed_milestone_proposal"
-    - "heimdall_signature_count"
-    - "heimdall_total_transaction_count"
-    - "heimdall_transaction_count"
-    - "milestone"
-    - "missed_block_proposal"
-    - "refresh_state_time"
-    - "reorg"
-    - "sealed_out_of_turn"
-    - "sensor_block_events"
-    - "sensor_blocks"
-    - "sensor_bogon_block"
-    - "state_sync"
-    - "stolen_block"
-    - "system"
-    - "time_to_finalized"
-    - "time_to_mine"
-    - "transaction_cost"
-    - "transaction_count"
-    - "transaction_gas_fee_cap"
-    - "transaction_gas_limit"
-    - "transaction_gas_price"
-    - "transaction_gas_tip_cap"
-    - "transaction_pool"
-    - "transaction_value"
-    - "trusted_batch"
-    - "uncles"
-    - "validator_wallet_balance"
-    - "zkevm_batches"
-    - "rollup_manager"
-    - "span"
+## @param observers - object - optional
+## Observers control which metrics will be emitted. By default, all observers are
+## enabled unless explicitly disabled.
+#
+# observers:
+#
+  ## @param disabled - list of strings - optional
+  ## @env PANOPTICHAIN_OBSERVERS_DISABLED - list of strings - optional
+  ## Disable specific observers from the observer list.
+  #
+  # disabled:
+  #
+  ## @param enabled - list of strings - optional
+  ## @env PANOPTICHAIN_OBSERVERS_ENABLED - list of strings - optional - default enables all observers
+  ## Enable only specific observers. Below are all available observers:
+  #
+  # enabled:
+  #   - "account_balances"
+  #   - "base_fee_per_gas"
+  #   - "block"
+  #   - "block_interval"
+  #   - "bogon_block"
+  #   - "bridge_event"
+  #   - "checkpoint"
+  #   - "claim_event"
+  #   - "deposit_counts"
+  #   - "double_sign"
+  #   - "empty_block"
+  #   - "exchange_rates"
+  #   - "exit_roots"
+  #   - "gas_limit"
+  #   - "gas_used"
+  #   - "hash_divergence"
+  #   - "heimdall_block_interval"
+  #   - "heimdall_checkpoint"
+  #   - "heimdall_height"
+  #   - "heimdall_missed_block_proposal"
+  #   - "heimdall_missed_checkpoint_proposal"
+  #   - "heimdall_missed_milestone_proposal"
+  #   - "heimdall_signature_count"
+  #   - "heimdall_total_transaction_count"
+  #   - "heimdall_transaction_count"
+  #   - "milestone"
+  #   - "missed_block_proposal"
+  #   - "refresh_state_time"
+  #   - "reorg"
+  #   - "sealed_out_of_turn"
+  #   - "sensor_block_events"
+  #   - "sensor_blocks"
+  #   - "sensor_bogon_block"
+  #   - "state_sync"
+  #   - "stolen_block"
+  #   - "system"
+  #   - "time_to_finalized"
+  #   - "time_to_mine"
+  #   - "transaction_cost"
+  #   - "transaction_count"
+  #   - "transaction_gas_fee_cap"
+  #   - "transaction_gas_limit"
+  #   - "transaction_gas_price"
+  #   - "transaction_gas_tip_cap"
+  #   - "transaction_pool"
+  #   - "transaction_value"
+  #   - "trusted_batch"
+  #   - "uncles"
+  #   - "validator_wallet_balance"
+  #   - "zkevm_batches"
+  #   - "rollup_manager"
+  #   - "span"
