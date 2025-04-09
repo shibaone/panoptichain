@@ -62,7 +62,7 @@ options.
    hasn't been configured to work with GCP so, the `sensor_network` providers
    should be commented out.
 
-2. Start panoptichain, prometheus, and grafana locally.
+2. Start Panoptichain, Prometheus, and Grafana locally.
 
    ```bash
    docker compose up --build
