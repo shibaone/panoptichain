@@ -48,7 +48,6 @@
   ## Port on which the pprof server will run.
   #
   # pprof_port: 6060
-  #
 
 ## @param logs - object - optional
 ## The logging configuration.
