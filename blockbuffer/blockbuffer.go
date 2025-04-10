@@ -41,12 +41,12 @@ func (h BigIntHeap) Less(i, j int) bool { return h[i].Cmp(h[j]) < 0 }
 func (h BigIntHeap) Swap(i, j int) { h[i], h[j] = h[j], h[i] }
 
 // Push will add an element to the heap.
-func (h *BigIntHeap) Push(x interface{}) {
+func (h *BigIntHeap) Push(x any) {
 	*h = append(*h, x.(*big.Int))
 }
 
 // Pop will remove the last element in the heap and return it.
-func (h *BigIntHeap) Pop() interface{} {
+func (h *BigIntHeap) Pop() any {
 	old := *h
 	n := len(old)
 	x := old[n-1]
