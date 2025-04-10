@@ -94,7 +94,7 @@ type Observers struct {
 
 // HTTP defines the properties that used for exposing metrics.
 type HTTP struct {
-	PromPort  int    `mapstructure:"port,prom_port,prometheus_port"`
+	PromPort  int    `mapstructure:"port"`
 	PprofPort int    `mapstructure:"pprof_port"`
 	Address   string `mapstructure:"address"`
 	Path      string `mapstructure:"path"`
@@ -153,7 +153,7 @@ func Init(args []string) error {
 
 	viper.SetDefault("namespace", "panoptichain")
 	viper.SetDefault("runner.interval", 30)
-	viper.SetDefault("http.prometheus_port", 9090)
+	viper.SetDefault("http.port", 9090)
 	viper.SetDefault("http.pprof_port", 6060)
 	viper.SetDefault("http.address", "localhost")
 	viper.SetDefault("http.path", "/metrics")
