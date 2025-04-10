@@ -16,6 +16,7 @@ import (
 	"github.com/0xPolygon/panoptichain/observer"
 )
 
+// desc stores the parsed prometheus.Desc.
 type desc struct {
 	FQName         string
 	Help           string
@@ -25,6 +26,7 @@ type desc struct {
 	MetricType     string
 }
 
+// parseDesc parses a prometheus.Desc.
 func parseDesc(line string) (*desc, error) {
 	re := regexp.MustCompile(`Desc{fqName: "(.*)", help: "(.*)", constLabels: {(.*)}, variableLabels: {(.*)}}`)
 	matches := re.FindStringSubmatch(line)
@@ -41,6 +43,7 @@ func parseDesc(line string) (*desc, error) {
 	}, nil
 }
 
+// parseLabels parses a comma-separated string of labels.
 func parseLabels(labels string) []string {
 	labels = strings.TrimSpace(labels)
 	if labels == "" {
@@ -50,6 +53,7 @@ func parseLabels(labels string) []string {
 	return strings.Split(labels, ",")
 }
 
+// printDesc prints parsed descriptions in Markdown format.
 func printDesc(desc *desc) {
 	fmt.Printf("\n### %s\n", desc.FQName)
 	fmt.Printf("%s\n", desc.Help)
@@ -66,6 +70,7 @@ func printDesc(desc *desc) {
 	}
 }
 
+// printLabels prints labels as lists in Markdown format.
 func printLabels(labels []string) {
 	for _, l := range labels {
 		fmt.Printf("- %s\n", l)
@@ -106,10 +111,10 @@ func main() {
 				d, _ := parseDesc(desc.String())
 				d.ObserverType = observerType.Name()
 				d.MetricType = reflect.ValueOf(c).Elem().Type().Name()
-				dBytes, _ := json.Marshal(d)
+				bytes, _ := json.Marshal(d)
 
 				if *jsonMode {
-					fmt.Println(string(dBytes))
+					fmt.Println(string(bytes))
 				}
 
 				if *markdownMode {
