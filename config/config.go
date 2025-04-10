@@ -94,10 +94,10 @@ type Observers struct {
 
 // HTTP defines the properties that used for exposing metrics.
 type HTTP struct {
-	PrometheusPort int    `mapstructure:"prometheus_port"`
-	PprofPort      int    `mapstructure:"pprof_port"`
-	Address        string `mapstructure:"address"`
-	Path           string `mapstructure:"path"`
+	PromPort  int    `mapstructure:"port,prom_port,prometheus_port"`
+	PprofPort int    `mapstructure:"pprof_port"`
+	Address   string `mapstructure:"address"`
+	Path      string `mapstructure:"path"`
 }
 
 type CustomNetwork struct {

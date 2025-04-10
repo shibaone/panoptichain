@@ -36,7 +36,7 @@ func main() {
 	// 2. The metrics / Prometheus system to expose those systems elsewhere.
 	go func() {
 		http.Handle(cfg.Path, promhttp.Handler())
-		address := fmt.Sprintf("%s:%d", cfg.Address, cfg.PrometheusPort)
+		address := fmt.Sprintf("%s:%d", cfg.Address, cfg.PromPort)
 		log.Info().Str("path", cfg.Path).Str("address", address).Msg("Starting Prometheus")
 
 		if err := http.ListenAndServe(address, nil); err != nil {
