@@ -42,6 +42,13 @@
   ## Path to serve Prometheus metrics (e.g., http://localhost:9090/metrics).
   #
   # path: "/metrics"
+  #
+  ## @param pprof_port - integer - optional - default 6060
+  ## @env PANOPTICHAIN_HTTP_PPROF_PORT - integer - optional - default 6060
+  ## Port on which the pprof server will run.
+  #
+  # pprof_port: 6060
+  #
 
 ## @param logs - object - optional
 ## The logging configuration.
