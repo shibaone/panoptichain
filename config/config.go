@@ -3,6 +3,7 @@
 package config
 
 import (
+	"os"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -162,6 +163,11 @@ func Init(args []string) error {
 
 	if err := viper.ReadInConfig(); err != nil {
 		return err
+	}
+
+	for _, k := range viper.AllKeys() {
+		v := viper.GetString(k)
+		viper.Set(k, os.ExpandEnv(v))
 	}
 
 	if err := viper.Unmarshal(&c); err != nil {
