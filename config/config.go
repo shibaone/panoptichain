@@ -101,19 +101,31 @@ type HTTP struct {
 	Path      string `mapstructure:"path"`
 }
 
-type CustomNetwork struct {
-	Name    string `mapstructure:"name" validate:"required"`
-	ChainID uint64 `mapstructure:"chain_id"`
+type Network struct {
+	Name         string `mapstructure:"name" validate:"required"`
+	ChainID      uint64 `mapstructure:"chain_id"`
+	PolygonPoS   bool   `mapstructure:"polygon_pos"`
+	PolygonZkEVM bool   `mapstructure:"polygon_zkevm"`
 }
 
 // GetName returns the network name.
-func (n CustomNetwork) GetName() string {
+func (n *Network) GetName() string {
 	return n.Name
 }
 
 // GetChainID returns the network chain ID.
-func (n CustomNetwork) GetChainID() uint64 {
+func (n *Network) GetChainID() uint64 {
 	return n.ChainID
+}
+
+// IsPolygonPoS returns if this is a Polygon PoS chain.
+func (n *Network) IsPolygonPoS() bool {
+	return n.PolygonPoS
+}
+
+// IsPolygonZkEVM returns if the network is a Polygon zkEVM chain.
+func (n *Network) IsPolygonZkEVM() bool {
+	return n.PolygonZkEVM
 }
 
 type Logs struct {
@@ -122,13 +134,13 @@ type Logs struct {
 }
 
 type config struct {
-	Namespace string          `mapstructure:"namespace" validate:"required"`
-	Runner    Runner          `mapstructure:"runner"`
-	HTTP      HTTP            `mapstructure:"http"`
-	Providers Providers       `mapstructure:"providers"`
-	Observers Observers       `mapstructure:"observers"`
-	Networks  []CustomNetwork `mapstructure:"networks"`
-	Logs      Logs            `mapstructure:"logs"`
+	Namespace string    `mapstructure:"namespace" validate:"required"`
+	Runner    Runner    `mapstructure:"runner"`
+	HTTP      HTTP      `mapstructure:"http"`
+	Providers Providers `mapstructure:"providers"`
+	Observers Observers `mapstructure:"observers"`
+	Networks  []Network `mapstructure:"networks"`
+	Logs      Logs      `mapstructure:"logs"`
 }
 
 var c *config

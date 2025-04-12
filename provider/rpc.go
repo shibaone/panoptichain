@@ -1237,7 +1237,7 @@ func (r *RPCProvider) newRollupNetwork(rollupID uint32) network.Network {
 		return nil
 	}
 
-	return &network.EVMNetwork{
+	return &config.Network{
 		Name: fmt.Sprintf("%s Rollup %d", name, rollupID),
 	}
 }
