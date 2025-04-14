@@ -103,7 +103,7 @@ type RPCProviderOpts struct {
 	BlockLookBack uint64
 }
 
-// NewRPCProvider will create a new RPC provider and configure it's event bus.
+// NewRPCProvider creates a new RPC provider and configures it's event bus.
 func NewRPCProvider(opts RPCProviderOpts) *RPCProvider {
 	logger := NewLogger(opts.Network, opts.Label)
 
@@ -656,7 +656,7 @@ func (r *RPCProvider) getBlockByNumber(ctx context.Context, n *big.Int, c *ethcl
 	return types.NewBlockWithHeader(head).WithBody(txs, uncles).WithWithdrawals(block.Withdrawals), nil
 }
 
-// fillRange will pull all of the blocks between the start and the current head.
+// fillRange pulls all of the blocks between the start and the current head.
 func (r *RPCProvider) fillRange(ctx context.Context, start uint64, c *ethclient.Client) {
 	r.logger.Debug().
 		Uint64("start_block", start).
@@ -989,9 +989,9 @@ func (r *RPCProvider) refreshBatch(ctx context.Context, c *ethclient.Client, end
 	}
 }
 
-// refreshExitRoot will update the exit root. If it has not seen, the exit root
-// it will set the Time to t. If it has already been observed, the time will
-// remain the same and the Seen value will be set to true.
+// refreshExitRoot updates the exit root. If it has not been seen, set the exit
+// root `Time` to `t`. If it has already been observed, the time will remain the
+// same and the `Seen` value will be set to true.
 func refreshExitRoot(er *observer.ExitRoot, bytes [32]byte, t time.Time) *observer.ExitRoot {
 	hash := common.BytesToHash(bytes[:])
 	if er == nil || er.Hash.Cmp(hash) != 0 {

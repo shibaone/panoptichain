@@ -54,9 +54,9 @@ type ContractAddresses struct {
 	RollupManagerAddress    *string `mapstructure:"rollup_manager_address"`
 }
 
-// TimeToMine configures the time to mine provider. This will periodically send
-// transactions on the network and record how long they took to be recorded in a
-// block.
+// TimeToMine configures the time to mine provider. This periodically sends
+// transactions on the network and records how long they took to be recorded in
+// a block.
 type TimeToMine struct {
 	Sender           string `mapstructure:"sender" validate:"required"`
 	SenderPrivateKey string `mapstructure:"sender_private_key" validate:"required"`

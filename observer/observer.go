@@ -28,7 +28,7 @@ type Observer interface {
 	// and setup any metrics.
 	Register(*EventBus)
 
-	// GetCollectors will return a slice of the collectors that are
+	// GetCollectors returns a slice of the collectors that are
 	// being tracked in this observer.
 	GetCollectors() []prometheus.Collector
 }
@@ -56,7 +56,7 @@ type Message interface {
 	Data() any
 }
 
-// NewMessage will create a new core message type.
+// NewMessage creates a new core message type.
 func NewMessage(n network.Network, label string, data any) *CoreMessage {
 	return &CoreMessage{
 		time:     time.Now(),
@@ -92,22 +92,21 @@ type Topic interface {
 	String() string
 }
 
-// EventBus is the object that will be responsible for passing messages between
-// providers and observers.
+// EventBus is responsible for passing messages between providers and observers.
 type EventBus struct {
 	observers map[string]ObserverSet
 	jobs      chan struct{}
 }
 
-// Subscribe will configure the given observer to be notified whenever the given
+// Subscribe configures the given observer to be notified whenever the given
 // topic is published. It's up to the observer to filter and handle the variety
 // of topics that could be created.
 func (eb *EventBus) Subscribe(topic Topic, o Observer) {
 	eb.observers[topic.String()] = append(eb.observers[topic.String()], o)
 }
 
-// Publish is called but the providers when they want to send a
-// message to all subscribers.
+// Publish is called by the providers when they want to send a message to all
+// subscribers.
 func (eb *EventBus) Publish(ctx context.Context, topic Topic, m Message) {
 	if len(eb.observers[topic.String()]) == 0 {
 		log.Warn().Str("topic", topic.String()).Msg("Topic published to empty subscriber set")
