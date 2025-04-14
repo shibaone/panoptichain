@@ -85,7 +85,7 @@ func main() {
 
 	flag.Parse()
 
-	if err := config.Init(flag.Args()); err != nil {
+	if err := config.Init(); err != nil {
 		slog.Error("Failed to initialize config", "error", err)
 		return
 	}

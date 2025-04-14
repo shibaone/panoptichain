@@ -3,7 +3,10 @@
 package config
 
 import (
+	"flag"
+	"log/slog"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -150,14 +153,24 @@ func Config() *config {
 	return c
 }
 
+// expandEnv expands environment variables when the viper is unmarhsalling into
+// the `config` struct.
+func expandEnv(f reflect.Type, _ reflect.Type, data any) (any, error) {
+	if f.Kind() == reflect.String {
+		return os.ExpandEnv(data.(string)), nil
+	}
+
+	return data, nil
+}
+
 // Init initializes the config. This should be called before using `Config()`.
-func Init(args []string) error {
+func Init() error {
 	viper.SetConfigName("config")
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/etc/panoptichain/")
 
-	if len(args) > 0 {
-		viper.SetConfigFile(args[0])
+	if len(flag.Args()) > 0 {
+		viper.SetConfigFile(flag.Args()[0])
 	}
 
 	viper.AutomaticEnv()
@@ -177,12 +190,7 @@ func Init(args []string) error {
 		return err
 	}
 
-	for _, k := range viper.AllKeys() {
-		v := viper.GetString(k)
-		viper.Set(k, os.ExpandEnv(v))
-	}
-
-	if err := viper.Unmarshal(&c); err != nil {
+	if err := viper.Unmarshal(&c, viper.DecodeHook(expandEnv)); err != nil {
 		return err
 	}
 
@@ -190,6 +198,8 @@ func Init(args []string) error {
 	if err := validate.Struct(c); err != nil {
 		return err
 	}
+
+	slog.Info("", "config", c)
 
 	return nil
 }

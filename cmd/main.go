@@ -18,7 +18,7 @@ func main() {
 	ctx := context.Background()
 	flag.Parse()
 
-	if err := config.Init(flag.Args()); err != nil {
+	if err := config.Init(); err != nil {
 		log.Error().Err(err).Msg("Failed to initialize config")
 		return
 	}
