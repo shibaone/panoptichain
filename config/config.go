@@ -156,8 +156,8 @@ func Init(args []string) error {
 	viper.AddConfigPath(".")
 	viper.AddConfigPath("/etc/panoptichain/")
 
-	if len(args) > 1 {
-		viper.SetConfigFile(args[1])
+	if len(args) > 0 {
+		viper.SetConfigFile(args[0])
 	}
 
 	viper.AutomaticEnv()
