@@ -17,7 +17,6 @@ import (
 
 	"github.com/0xPolygon/panoptichain/api"
 	"github.com/0xPolygon/panoptichain/contracts"
-	"github.com/0xPolygon/panoptichain/log"
 	"github.com/0xPolygon/panoptichain/metrics"
 	"github.com/0xPolygon/panoptichain/observer/topics"
 )
@@ -30,22 +29,23 @@ func (o *EmptyBlockObserver) Notify(ctx context.Context, m Message) {
 	logger := NewLogger(o, m)
 
 	block := m.Data().(*types.Block)
-
-	bytes, err := api.Ecrecover(block.Header())
-	if err != nil {
-		logger.Warn().Err(err).Msg("Failed to get block signer")
-		return
-	}
-	signer := "0x" + hex.EncodeToString(bytes)
-
 	if len(block.Transactions()) > 0 {
 		return
 	}
 
-	logger.Debug().
-		Uint64("block_number", block.NumberU64()).
-		Str("signer", signer).
-		Msg("Empty block detected")
+	if m.Network().IsPolygonPoS() {
+		bytes, err := api.Ecrecover(block.Header())
+		if err != nil {
+			logger.Warn().Err(err).Msg("Failed to get block signer")
+			return
+		}
+		signer := "0x" + hex.EncodeToString(bytes)
+
+		logger.Debug().
+			Uint64("block_number", block.NumberU64()).
+			Str("signer", signer).
+			Msg("Empty block detected")
+	}
 
 	o.counter.WithLabelValues(m.Network().GetName(), m.Provider()).Inc()
 }
@@ -108,6 +108,10 @@ type BogonBlockObserver struct {
 
 func (o *BogonBlockObserver) Notify(ctx context.Context, m Message) {
 	logger := NewLogger(o, m)
+
+	if !m.Network().IsPolygonPoS() {
+		return
+	}
 
 	signers, err := api.Signers(m.Network())
 	if err != nil {
@@ -259,17 +263,13 @@ type BaseFeePerGasObserver struct {
 
 func (o *BaseFeePerGasObserver) Register(eb *EventBus) {
 	eb.Subscribe(topics.NewEVMBlock, o)
-	// TODO(praetoriasentry): is this worth having a histogram at some point?
+	// TODO(praetoriansentry): is this worth having a histogram at some point?
 	o.gauge = metrics.NewGauge(metrics.RPC, "base_fee_per_gas", "The base fee per gas (gwei)")
 }
 
 func (o *BaseFeePerGasObserver) Notify(ctx context.Context, m Message) {
-	logger := NewLogger(o, m)
-
 	block := m.Data().(*types.Block)
-
 	if block.BaseFee() == nil {
-		logger.Warn().Msg("Base fee is nil")
 		return
 	}
 
@@ -1161,13 +1161,11 @@ func (o *RollupManagerObserver) Notify(ctx context.Context, m Message) {
 
 	if data.BatchFee != nil {
 		bf, _ := weiToGwei(data.BatchFee).Float64()
-		log.Info().Float64("batch_fee", bf).Send()
 		o.batchFee.WithLabelValues(m.Network().GetName(), m.Provider()).Set(bf)
 	}
 
 	if data.RewardPerBatch != nil {
 		rpb, _ := weiToGwei(data.RewardPerBatch).Float64()
-		log.Info().Float64("reward_per_batch", rpb).Send()
 		o.rewardPerBatch.WithLabelValues(m.Network().GetName(), m.Provider()).Set(rpb)
 	}
 

@@ -156,16 +156,24 @@ func (r *RPCProvider) RefreshState(ctx context.Context) error {
 	}
 
 	r.refreshBlockBuffer(ctx, c)
+
 	r.refreshStateSync(ctx, c, true)
 	r.refreshStateSync(ctx, c, false)
 	r.refreshCheckpoint(ctx, c)
-	r.refreshValidatorBalances(ctx, c)
-	r.refreshMissedBlockProposal(ctx, c)
+
+	if r.Network.IsPolygonPoS() {
+		r.refreshValidatorBalances(ctx, c)
+		r.refreshMissedBlockProposal(ctx, c)
+	}
+
 	r.refreshTxPoolStatus(ctx, c)
 	r.refreshTimeToMine(ctx, c)
 	r.refreshAccountBalances(ctx, c)
 
-	r.refreshBatches(ctx, c)
+	if r.Network.IsPolygonZkEVM() {
+		r.refreshBatches(ctx, c)
+	}
+
 	r.refreshRollupManager(ctx, c)
 	r.refreshExitRoots(ctx, c)
 	r.refreshExitRootsL2(ctx, c)
@@ -346,7 +354,7 @@ func (r *RPCProvider) getFilterOpts() *bind.FilterOpts {
 		Any("block_number", r.BlockNumber).
 		Any("prev_block_number", r.prevBlockNumber).
 		Any("block_look_back", r.blockLookBack).
-		Send()
+		Msg("Getting filter options")
 
 	return &opts
 }

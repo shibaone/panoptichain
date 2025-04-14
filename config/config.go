@@ -4,7 +4,6 @@ package config
 
 import (
 	"flag"
-	"log/slog"
 	"os"
 	"reflect"
 	"strings"
@@ -198,8 +197,6 @@ func Init() error {
 	if err := validate.Struct(c); err != nil {
 		return err
 	}
-
-	slog.Info("", "config", c)
 
 	return nil
 }
