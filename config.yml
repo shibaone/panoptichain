@@ -103,6 +103,20 @@
   ## The network chain ID.
   #
   #   chain_id: 1337
+  #
+  ## @param polygon_pos - boolean - optional - default false
+  ## @env PANOPTICHAIN_NETWORKS_0_POLYGON_POS - boolean - optional - default false
+  ## Whether this is a Polygon PoS chain. This will enable some features
+  ## specific to the chain.
+  #
+  #   polygon_pos: false
+  #
+  ## @param polygon_zkevm - boolean - optional - default false
+  ## @env PANOPTICHAIN_NETWORKS_0_POLYGON_ZKEVM - boolean - optional - default false
+  ## Whether this is a Polygon zkEVM chain. This will enable some features
+  ## specific to the chain.
+  #
+  #   polygon_zkevm: false
 
 ## @param providers - object - optional
 ## Providers fetch data from various sources and handle state storage. The
