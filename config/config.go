@@ -12,11 +12,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-// Runner holds the config values that are needed to manage the job system.
+// Runner configures the execution interval of the job system.
 type Runner struct {
 	Interval uint `mapstructure:"interval" validate:"required"`
 }
 
+// Providers encloses the different providers configurations. Providers are
+// responsible for fetching data.
 type Providers struct {
 	RPCs              []RPC              `mapstructure:"rpc" validate:"dive"`
 	HeimdallEndpoints []HeimdallEndpoint `mapstructure:"heimdall" validate:"dive"`
@@ -38,6 +40,8 @@ type RPC struct {
 	BlockLookBack *uint64           `mapstructure:"block_look_back"`
 }
 
+// ContractAddresses maps specific contracts to their addresses. This is used to
+// fetch on-chain data from these contracts.
 type ContractAddresses struct {
 	// PoS
 	StateSyncSenderAddress   *string `mapstructure:"state_sync_sender_address"`
@@ -50,6 +54,9 @@ type ContractAddresses struct {
 	RollupManagerAddress    *string `mapstructure:"rollup_manager_address"`
 }
 
+// TimeToMine configures the time to mine provider. This will periodically send
+// transactions on the network and record how long they took to be recorded in a
+// block.
 type TimeToMine struct {
 	Sender           string `mapstructure:"sender" validate:"required"`
 	SenderPrivateKey string `mapstructure:"sender_private_key" validate:"required"`
@@ -60,20 +67,28 @@ type TimeToMine struct {
 	GasLimit         uint64 `mapstructure:"gas_limit" validate:"required"`
 }
 
+// HashDivergence configures the hash divergence provider. This tracks whether
+// blocks with the same block number have different hashes.
 type HashDivergence struct {
 	Interval uint `mapstructure:"interval"`
 }
 
+// System configures the system provider. This keeps system diagnostic metrics
+// such as uptime.
 type System struct {
 	Interval uint `mapstructure:"interval"`
 }
 
+// ExchangeRates configures the exchange rates provider. This fetches exchange
+// rate data from the Coinbase API.
 type ExchangeRates struct {
 	CoinbaseURL string              `mapstructure:"coinbase_url" validate:"required"`
 	Tokens      map[string][]string `mapstructure:"tokens"`
 	Interval    uint                `mapstructure:"interval"`
 }
 
+// HeimdallEndpoint configures the heimdall provider. This provider fetches data
+// from the consensus layer endpoints for Polygon PoS chains.
 type HeimdallEndpoint struct {
 	Name          string `mapstructure:"name"`
 	TendermintURL string `mapstructure:"tendermint_url" validate:"url,required_with=Name"`
@@ -82,6 +97,8 @@ type HeimdallEndpoint struct {
 	Interval      uint   `mapstructure:"interval"`
 }
 
+// SensorNetwork configures the sensor network provider. This fetches data from
+// GCP Datastore where the sensors write their data.
 type SensorNetwork struct {
 	Name     string `mapstructure:"name"`
 	Label    string `mapstructure:"label" validate:"required_with=Name"`
@@ -90,6 +107,8 @@ type SensorNetwork struct {
 	Interval uint   `mapstructure:"interval"`
 }
 
+// Observers defines which observers should be enabled or disabled. Observers
+// are responsible for emitting the Prometheus metrics.
 type Observers struct {
 	Enabled  []string `mapstructure:"enabled"`
 	Disabled []string `mapstructure:"disabled"`
@@ -103,6 +122,7 @@ type HTTP struct {
 	Path      string `mapstructure:"path"`
 }
 
+// Network defines metadata about a blockchain network.
 type Network struct {
 	Name         string `mapstructure:"name" validate:"required"`
 	ChainID      uint64 `mapstructure:"chain_id"`
@@ -130,6 +150,7 @@ func (n *Network) IsPolygonZkEVM() bool {
 	return n.PolygonZkEVM
 }
 
+// Logs configures logging format and verbosity options.
 type Logs struct {
 	Pretty    bool   `mapstructure:"pretty"`
 	Verbosity string `mapstructure:"verbosity"`

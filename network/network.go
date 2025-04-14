@@ -8,7 +8,7 @@ import (
 	"github.com/0xPolygon/panoptichain/log"
 )
 
-// Network is the interface that we need to identify a network.
+// Network is the interface needed to identify a network.
 type Network interface {
 	GetName() string
 	GetChainID() uint64
@@ -59,8 +59,7 @@ var KnownNetworks = []Network{
 	&Sepolia,
 }
 
-// GetNetworkByName is a convenience method to convert a name like "Ethereum"
-// into a Network object.
+// GetNetworkByName converts a name like "Ethereum" into a Network object.
 func GetNetworkByName(name string) (Network, error) {
 	for _, n := range config.Config().Networks {
 		if n.GetName() == name {
