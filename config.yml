@@ -406,6 +406,7 @@
   #   - "empty_block"
   #   - "exchange_rates"
   #   - "exit_roots"
+  #   - "finalized_height"
   #   - "gas_limit"
   #   - "gas_used"
   #   - "hash_divergence"
