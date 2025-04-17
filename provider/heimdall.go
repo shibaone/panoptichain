@@ -27,6 +27,7 @@ type HeimdallProvider struct {
 	bus           *observer.EventBus
 	interval      uint
 	logger        zerolog.Logger
+	version       uint
 
 	BlockNumber         uint64
 	prevBlockNumber     uint64
@@ -48,7 +49,7 @@ type HeimdallProvider struct {
 	refreshStateTime *time.Duration
 }
 
-func NewHeimdallProvider(n network.Network, tendermintURL, heimdallURL, label string, eb *observer.EventBus, interval uint) *HeimdallProvider {
+func NewHeimdallProvider(n network.Network, tendermintURL, heimdallURL, label string, eb *observer.EventBus, interval uint, version uint) *HeimdallProvider {
 	return &HeimdallProvider{
 		TendermintURL:       tendermintURL,
 		HeimdallURL:         heimdallURL,
@@ -60,6 +61,7 @@ func NewHeimdallProvider(n network.Network, tendermintURL, heimdallURL, label st
 		logger:              NewLogger(n, label),
 		checkpointProposers: orderedmap.New[string, struct{}](),
 		refreshStateTime:    new(time.Duration),
+		version:             version,
 	}
 }
 
@@ -73,11 +75,17 @@ func (h *HeimdallProvider) RefreshState(ctx context.Context) error {
 	h.logger.Debug().Msg("Refreshing Heimdall State")
 
 	h.refreshBlockBuffer()
-	h.refreshMilestone()
+
+	switch h.version {
+	case 1:
+		h.refreshMilestone()
+		h.refreshMissedMilestoneProposal()
+	case 2:
+	}
+
 	h.refreshCheckpoint()
 	h.refreshMissedCheckpointProposal()
 	h.refreshMissedBlockProposal()
-	h.refreshMissedMilestoneProposal()
 	h.refreshSpan()
 
 	return nil
@@ -272,11 +280,13 @@ func (h *HeimdallProvider) refreshMilestone() error {
 		return err
 	}
 
-	err = api.GetJSON(path, &h.milestone)
+	milestone := observer.HeimdallResult[observer.HeimdallMilestone]{}
+	err = api.GetJSON(path, &milestone)
 	if err != nil {
-		h.logger.Error().Err(err).Msg("Unable to get latest heimdall milestone")
+		h.logger.Error().Err(err).Msg("Unable to get latest Heimdall milestone")
 		return err
 	}
+	h.milestone = &milestone.Result
 
 	h.milestone.PrevCount = max(h.milestone.PrevCount, h.milestone.Count)
 	h.milestone.Count = count.Result.Count
@@ -425,7 +435,7 @@ func (h *HeimdallProvider) refreshMissedMilestoneProposal() error {
 
 	for _, validator := range h.prevMilestoneProposers {
 		// Stop when we see the latest milestone.
-		if validator.Signer == h.milestone.Result.Proposer {
+		if validator.Signer == h.milestone.Proposer {
 			break
 		}
 

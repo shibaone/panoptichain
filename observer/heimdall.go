@@ -296,19 +296,22 @@ type HeimdallMilestoneCount struct {
 	} `json:"result"`
 }
 
-type HeimdallMilestone struct {
+// HeimdallResult wraps responses payloads in Heimdall v1.
+type HeimdallResult[T any] struct {
 	Height string `json:"height"`
-	Result struct {
-		Proposer    string `json:"proposer"`
-		StartBlock  uint64 `json:"start_block"`
-		EndBlock    uint64 `json:"end_block"`
-		Hash        string `json:"hash"`
-		BorChainID  string `json:"bor_chain_id"`
-		MilestoneID string `json:"milestone_id"`
-		Timestamp   uint64 `json:"timestamp"`
-	} `json:"result"`
-	Count     uint64 `json:"count"`
-	PrevCount uint64
+	Result T      `json:"result"`
+}
+
+type HeimdallMilestone struct {
+	Proposer    string `json:"proposer"`
+	StartBlock  uint64 `json:"start_block"`
+	EndBlock    uint64 `json:"end_block"`
+	Hash        string `json:"hash"`
+	BorChainID  string `json:"bor_chain_id"`
+	MilestoneID string `json:"milestone_id"`
+	Timestamp   uint64 `json:"timestamp"`
+	Count       uint64
+	PrevCount   uint64
 }
 
 type MilestoneObserver struct {
@@ -321,21 +324,11 @@ type MilestoneObserver struct {
 }
 
 func (o *MilestoneObserver) Notify(ctx context.Context, m Message) {
-	logger := NewLogger(o, m)
-
 	milestone := m.Data().(*HeimdallMilestone)
-	seconds := time.Now().Sub(time.Unix(int64(milestone.Result.Timestamp), 0)).Seconds()
+	seconds := time.Now().Sub(time.Unix(int64(milestone.Timestamp), 0)).Seconds()
 
-	height, ok := new(big.Float).SetString(milestone.Height)
-	if ok {
-		h, _ := height.Float64()
-		o.height.WithLabelValues(m.Network().GetName(), m.Provider()).Set(h)
-	} else {
-		logger.Error().Msg("Failed to get Heimdall milestone height")
-	}
-
-	start := float64(milestone.Result.StartBlock)
-	end := float64(milestone.Result.EndBlock)
+	start := float64(milestone.StartBlock)
+	end := float64(milestone.EndBlock)
 
 	o.count.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(milestone.Count))
 	o.time.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(seconds))
@@ -495,12 +488,14 @@ func (o *HeimdallMissedMilestoneProposal) GetCollectors() []prometheus.Collector
 }
 
 type HeimdallSpan struct {
-	Height string `json:"height"`
-	Result struct {
-		SpanID     int64 `json:"span_id"`
-		StartBlock int64 `json:"start_block"`
-		EndBlock   int64 `json:"end_block"`
-	} `json:"result"`
+	Height string         `json:"height"`
+	Result HeimdallV2Span `json:"result"`
+}
+
+type HeimdallV2Span struct {
+	SpanID     int64 `json:"span_id"`
+	StartBlock int64 `json:"start_block"`
+	EndBlock   int64 `json:"end_block"`
 }
 
 type HeimdallSpanObserver struct {
