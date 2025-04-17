@@ -104,7 +104,7 @@ type RPCProviderOpts struct {
 	BlockLookBack uint64
 }
 
-// NewRPCProvider will create a new RPC provider and configure it's event bus.
+// NewRPCProvider creates a new RPC provider and configures it's event bus.
 func NewRPCProvider(opts RPCProviderOpts) *RPCProvider {
 	logger := NewLogger(opts.Network, opts.Label)
 
@@ -157,16 +157,24 @@ func (r *RPCProvider) RefreshState(ctx context.Context) error {
 	}
 
 	r.refreshBlockBuffer(ctx, c)
+
 	r.refreshStateSync(ctx, c, true)
 	r.refreshStateSync(ctx, c, false)
 	r.refreshCheckpoint(ctx, c)
-	r.refreshValidatorBalances(ctx, c)
-	r.refreshMissedBlockProposal(ctx, c)
+
+	if r.Network.IsPolygonPoS() {
+		r.refreshValidatorBalances(ctx, c)
+		r.refreshMissedBlockProposal(ctx, c)
+	}
+
 	r.refreshTxPoolStatus(ctx, c)
 	r.refreshTimeToMine(ctx, c)
 	r.refreshAccountBalances(ctx, c)
 
-	r.refreshBatches(ctx, c)
+	if r.Network.IsPolygonZkEVM() {
+		r.refreshBatches(ctx, c)
+	}
+
 	r.refreshRollupManager(ctx, c)
 	r.refreshExitRoots(ctx, c)
 	r.refreshExitRootsL2(ctx, c)
@@ -353,7 +361,7 @@ func (r *RPCProvider) getFilterOpts() *bind.FilterOpts {
 		Any("block_number", r.BlockNumber).
 		Any("prev_block_number", r.prevBlockNumber).
 		Any("block_look_back", r.blockLookBack).
-		Send()
+		Msg("Getting filter options")
 
 	return &opts
 }
@@ -658,7 +666,7 @@ func (r *RPCProvider) getBlockByNumber(ctx context.Context, n *big.Int, c *ethcl
 	return types.NewBlockWithHeader(head).WithBody(txs, uncles).WithWithdrawals(block.Withdrawals), nil
 }
 
-// fillRange will pull all of the blocks between the start and the current head.
+// fillRange pulls all of the blocks between the start and the current head.
 func (r *RPCProvider) fillRange(ctx context.Context, start uint64, c *ethclient.Client) {
 	r.logger.Debug().
 		Uint64("start_block", start).
@@ -991,9 +999,9 @@ func (r *RPCProvider) refreshBatch(ctx context.Context, c *ethclient.Client, end
 	}
 }
 
-// refreshExitRoot will update the exit root. If it has not seen, the exit root
-// it will set the Time to t. If it has already been observed, the time will
-// remain the same and the Seen value will be set to true.
+// refreshExitRoot updates the exit root. If it has not been seen, set the exit
+// root `Time` to `t`. If it has already been observed, the time will remain the
+// same and the `Seen` value will be set to true.
 func refreshExitRoot(er *observer.ExitRoot, bytes [32]byte, t time.Time) *observer.ExitRoot {
 	hash := common.BytesToHash(bytes[:])
 	if er == nil || er.Hash.Cmp(hash) != 0 {
@@ -1247,7 +1255,7 @@ func (r *RPCProvider) newRollupNetwork(rollupID uint32) network.Network {
 		return nil
 	}
 
-	return &network.EVMNetwork{
+	return &config.Network{
 		Name: fmt.Sprintf("%s Rollup %d", name, rollupID),
 	}
 }

@@ -8,19 +8,18 @@ import (
 	"github.com/0xPolygon/panoptichain/log"
 )
 
-// Network is the interface that we need to identify a network.
+// Network is the interface needed to identify a network.
 type Network interface {
 	GetName() string
+	GetChainID() uint64
+	IsPolygonPoS() bool
+	IsPolygonZkEVM() bool
 }
 
 const (
 	PolygonMainnetName = "Polygon Mainnet"
 	PolygonMumbaiName  = "Polygon Mumbai"
 	PolygonAmoyName    = "Polygon Amoy"
-
-	HeimdallMainnetName = "Heimdall Mainnet"
-	HeimdallMumbaiName  = "Heimdall Mumbai"
-	HeimdallAmoyName    = "Heimdall Amoy"
 
 	ZkEVMMainnetName = "zkEVM Mainnet"
 	ZkEVMTestnetName = "zkEVM Testnet"
@@ -32,31 +31,23 @@ const (
 	GoerliName   = "Goerli"
 )
 
-var PolygonMainnet = EVMNetwork{Name: PolygonMainnetName, ChainID: 137}
-var PolygonMumbai = EVMNetwork{Name: PolygonMumbaiName, ChainID: 80001}
-var PolygonAmoy = EVMNetwork{Name: PolygonAmoyName, ChainID: 80002}
+var PolygonMainnet = config.Network{Name: PolygonMainnetName, ChainID: 137, PolygonPoS: true}
+var PolygonMumbai = config.Network{Name: PolygonMumbaiName, ChainID: 80001, PolygonPoS: true}
+var PolygonAmoy = config.Network{Name: PolygonAmoyName, ChainID: 80002, PolygonPoS: true}
 
-var HeimdallMainnet = TendermintNetwork{Name: HeimdallMainnetName, ChainID: "heimdall-137"}
-var HeimdallMumbai = TendermintNetwork{Name: HeimdallMumbaiName, ChainID: "heimdall-80001"}
-var HeimdallAmoy = TendermintNetwork{Name: HeimdallAmoyName, ChainID: "heimdall-80002"}
+var ZkEVMMainnet = config.Network{Name: ZkEVMMainnetName, ChainID: 1101, PolygonZkEVM: true}
+var ZkEVMTestnet = config.Network{Name: ZkEVMTestnetName, ChainID: 1442, PolygonZkEVM: true}
+var ZkEVMCardona = config.Network{Name: ZkEVMCardonaName, ChainID: 2442, PolygonZkEVM: true}
+var ZkEVMBali = config.Network{Name: ZkEVMBaliName, ChainID: 2440, PolygonZkEVM: true}
 
-var ZkEVMMainnet = EVMNetwork{Name: ZkEVMMainnetName, ChainID: 1101}
-var ZkEVMTestnet = EVMNetwork{Name: ZkEVMTestnetName, ChainID: 1442}
-var ZkEVMCardona = EVMNetwork{Name: ZkEVMCardonaName, ChainID: 2442}
-var ZkEVMBali = EVMNetwork{Name: ZkEVMBaliName, ChainID: 2440}
-
-var Ethereum = EVMNetwork{Name: EthereumName, ChainID: 1}
-var Sepolia = EVMNetwork{Name: SepoliaName, ChainID: 11155111}
-var Goerli = EVMNetwork{Name: GoerliName, ChainID: 5}
+var Ethereum = config.Network{Name: EthereumName, ChainID: 1}
+var Sepolia = config.Network{Name: SepoliaName, ChainID: 11155111}
+var Goerli = config.Network{Name: GoerliName, ChainID: 5}
 
 var KnownNetworks = []Network{
 	&PolygonMainnet,
 	&PolygonMumbai,
 	&PolygonAmoy,
-
-	&HeimdallMainnet,
-	&HeimdallMumbai,
-	&HeimdallAmoy,
 
 	&ZkEVMMainnet,
 	&ZkEVMTestnet,
@@ -64,51 +55,15 @@ var KnownNetworks = []Network{
 	&ZkEVMBali,
 
 	&Ethereum,
-	&Sepolia,
 	&Goerli,
+	&Sepolia,
 }
 
-// EVMNetwork is a specific type of network that is assumed to generally follow
-// the norms of an Ethereum based network.
-type EVMNetwork struct {
-	Name    string
-	ChainID uint64
-}
-
-// GetName returns the name that we've set for the network. It doesn't have to
-// be canonical in anyway. Just something to match configs.
-func (n *EVMNetwork) GetName() string {
-	return n.Name
-}
-
-// GetChainID should return the configured chain id for the network.
-func (n *EVMNetwork) GetChainID() uint64 {
-	return n.ChainID
-}
-
-// TendermintNetwork is close to an EVMNetwork but generally the chain
-// ID is a string and there won't be typical JSON RPC provers.
-type TendermintNetwork struct {
-	Name    string
-	ChainID string
-}
-
-// GetName will return the configured name for this network.
-func (n *TendermintNetwork) GetName() string {
-	return n.Name
-}
-
-// GetChainID will return the chain id for the network.
-func (n *TendermintNetwork) GetChainID() string {
-	return n.ChainID
-}
-
-// GetNetworkByName is a convenience method to convert a name like
-// "Ethereum" into a Network object.
+// GetNetworkByName converts a name like "Ethereum" into a Network object.
 func GetNetworkByName(name string) (Network, error) {
 	for _, n := range config.Config().Networks {
 		if n.GetName() == name {
-			return n, nil
+			return &n, nil
 		}
 	}
 

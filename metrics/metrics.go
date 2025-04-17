@@ -25,7 +25,7 @@ const (
 	System
 )
 
-// NewCounter will return a prometheus counter object with labels for network
+// NewCounter returns a Prometheus counter object with labels for network
 // and provider.
 func NewCounter(subsystem Subsystem, name, help string, labels ...string) *prometheus.CounterVec {
 	return promauto.NewCounterVec(prometheus.CounterOpts{
@@ -36,7 +36,7 @@ func NewCounter(subsystem Subsystem, name, help string, labels ...string) *prome
 	}, append([]string{"network", "provider"}, labels...))
 }
 
-// NewGauge will return a prometheus gauge with labels for network and provider.
+// NewGauge returns a Prometheus gauge with labels for network and provider.
 func NewGauge(subsystem Subsystem, name, help string, labels ...string) *prometheus.GaugeVec {
 	return promauto.NewGaugeVec(prometheus.GaugeOpts{
 		Namespace: config.Config().Namespace,
@@ -46,7 +46,7 @@ func NewGauge(subsystem Subsystem, name, help string, labels ...string) *prometh
 	}, append([]string{"network", "provider"}, labels...))
 }
 
-// NewGaugeWithoutLabels will return a prometheus gauge without labels.
+// NewGaugeWithoutLabels returns a Prometheus gauge without labels.
 func NewGaugeWithoutLabels(subsystem Subsystem, name, help string) prometheus.Gauge {
 	return promauto.NewGauge(prometheus.GaugeOpts{
 		Namespace: config.Config().Namespace,
@@ -56,7 +56,7 @@ func NewGaugeWithoutLabels(subsystem Subsystem, name, help string) prometheus.Ga
 	})
 }
 
-// NewHistogram will return a configured histogram with labels for network and
+// NewHistogram returns a configured histogram with labels for network and
 // provider.
 func NewHistogram(subsystem Subsystem, name, help string, buckets []float64, labels ...string) *prometheus.HistogramVec {
 	return promauto.NewHistogramVec(prometheus.HistogramOpts{
