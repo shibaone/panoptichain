@@ -352,10 +352,12 @@ func (o *HeimdallMissedBlockProposalObserver) Notify(ctx context.Context, m Mess
 
 	missedBlockProposal := m.Data().(HeimdallMissedBlockProposal)
 	for blockNumber, proposers := range missedBlockProposal {
-		logger.Debug().
-			Uint64("block_number", blockNumber).
-			Strs("proposers", proposers).
-			Msg("Updating Heimdall missed block proposal")
+		if len(proposers) > 0 {
+			logger.Debug().
+				Uint64("block_number", blockNumber).
+				Strs("proposers", proposers).
+				Msg("Updating Heimdall missed block proposal")
+		}
 
 		for _, proposer := range proposers {
 			o.missedBlockProposal.WithLabelValues(m.Network().GetName(), m.Provider(), proposer).Inc()
