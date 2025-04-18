@@ -454,7 +454,7 @@ func (h *HeimdallProvider) refreshSpan() error {
 	}
 
 	span := observer.HeimdallSpanV1{}
-	err = api.GetJSON(url, span)
+	err = api.GetJSON(url, &span)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall latest span")
 		return err
