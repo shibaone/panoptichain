@@ -468,7 +468,7 @@ func (o *HeimdallMissedMilestoneProposal) Notify(ctx context.Context, m Message)
 }
 
 func (o *HeimdallMissedMilestoneProposal) Register(eb *EventBus) {
-	eb.Subscribe(topics.MissedCheckpointProposal, o)
+	eb.Subscribe(topics.MissedMilestoneProposal, o)
 	o.missedMilestoneProposal = metrics.NewCounter(
 		metrics.Heimdall,
 		"missed_milestone_proposal",
