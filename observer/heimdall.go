@@ -350,8 +350,8 @@ type HeimdallMissedBlockProposalObserver struct {
 func (o *HeimdallMissedBlockProposalObserver) Notify(ctx context.Context, m Message) {
 	logger := NewLogger(o, m)
 
-	missedBlockProposal := m.Data().(*HeimdallMissedBlockProposal)
-	for blockNumber, proposers := range *missedBlockProposal {
+	missedBlockProposal := m.Data().(HeimdallMissedBlockProposal)
+	for blockNumber, proposers := range missedBlockProposal {
 		logger.Debug().
 			Uint64("block_number", blockNumber).
 			Strs("proposers", proposers).
