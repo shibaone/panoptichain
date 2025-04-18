@@ -318,7 +318,7 @@ func (h *HeimdallProvider) refreshMissedCheckpointProposal() error {
 	}
 
 	h.logger.Info().
-		Any("checkpoint_proposers", h.checkpointProposers).
+		Any("checkpoint_proposers", checkpointProposers).
 		Any("missed_checkpoint_proposers", h.missedCheckpointProposers).
 		Msg("Refreshing missed checkpoint proposal")
 
