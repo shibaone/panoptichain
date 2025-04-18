@@ -241,7 +241,6 @@ func (h *HeimdallProvider) fillRange(start uint64) {
 	h.logger.Debug().
 		Uint64("start_block", start).
 		Uint64("end_block", h.BlockNumber).
-		Str("url", h.TendermintURL).
 		Msg("Filling block range")
 
 	for i := start + 1; i <= h.BlockNumber; i++ {

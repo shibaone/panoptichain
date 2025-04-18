@@ -671,7 +671,6 @@ func (r *RPCProvider) fillRange(ctx context.Context, start uint64, c *ethclient.
 	r.logger.Debug().
 		Uint64("start_block", start).
 		Uint64("end_block", r.BlockNumber).
-		Str("url", r.parsedURL.Host).
 		Msg("Filling block range")
 
 	for i := start + 1; i <= r.BlockNumber; i++ {
