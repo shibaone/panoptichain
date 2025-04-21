@@ -75,14 +75,8 @@ func (h *HeimdallProvider) RefreshState(ctx context.Context) error {
 	h.logger.Debug().Msg("Refreshing Heimdall state")
 
 	h.refreshBlockBuffer()
-
-	switch h.version {
-	case 1:
-		h.refreshMilestone()
-		h.refreshMissedMilestoneProposal()
-	case 2:
-	}
-
+	h.refreshMilestone()
+	h.refreshMissedMilestoneProposal()
 	h.refreshCheckpoint()
 	h.refreshMissedCheckpointProposal()
 	h.refreshMissedBlockProposal()
@@ -206,14 +200,14 @@ func (h *HeimdallProvider) getBlock(height uint64) *observer.HeimdallBlock {
 		path = fmt.Sprintf("%s?height=%d", path, height)
 	}
 
-	block := &observer.HeimdallBlock{}
+	var block observer.HeimdallBlock
 	err = api.GetJSON(path, &block)
 	if err != nil {
 		h.logger.Warn().Err(err).Msg("Failed to get Heimdall block")
 		return nil
 	}
 
-	return block
+	return &block
 }
 
 func (h *HeimdallProvider) getValidators(height uint64) *observer.HeimdallValidators {
@@ -254,41 +248,66 @@ func (h *HeimdallProvider) fillRange(start uint64) {
 	}
 }
 
+func (h *HeimdallProvider) refreshHeimdallMilestoneCount() (*observer.HeimdallMilestoneCount, error) {
+	path, err := url.JoinPath(h.HeimdallURL, "milestone/count")
+	if err != nil {
+		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone count path")
+		return nil, err
+	}
+
+	var count observer.HeimdallMilestoneCount
+	switch h.version {
+	case 1:
+		var v1 observer.HeimdallMilestoneCountV1
+		if err := api.GetJSON(path, &v1); err != nil {
+			return nil, err
+		}
+		count = v1.Result
+	case 2:
+		if err := api.GetJSON(path, &count); err != nil {
+			return nil, err
+		}
+	}
+
+	return &count, nil
+}
+
 func (h *HeimdallProvider) refreshMilestone() error {
 	if h.milestone != nil {
 		h.prevMilestoneCount = h.milestone.Count
 	}
 
-	path, err := url.JoinPath(h.HeimdallURL, "milestone/count")
-	if err != nil {
-		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone count path")
-		return err
-	}
-
-	count := &observer.HeimdallMilestoneCountV1{}
-
-	err = api.GetJSON(path, &count)
+	count, err := h.refreshHeimdallMilestoneCount()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone count")
 		return err
 	}
 
-	path, err = url.JoinPath(h.HeimdallURL, "milestone", fmt.Sprint(count.Result.Count))
+	path, err := url.JoinPath(h.HeimdallURL, "milestone", fmt.Sprint(count.Count))
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone path")
 		return err
 	}
 
-	milestone := observer.HeimdallMilestoneV1{}
-	err = api.GetJSON(path, &milestone)
+	var milestone observer.HeimdallMilestone
+	switch h.version {
+	case 1:
+		var v1 observer.HeimdallMilestoneV1
+		if err = api.GetJSON(path, &v1); err == nil {
+			milestone = v1.Result
+		}
+	case 2:
+		err = api.GetJSON(path, &milestone)
+	}
+
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone")
 		return err
 	}
 
-	h.milestone = &milestone.Result
-	h.milestone.PrevCount = max(h.prevMilestoneCount, h.milestone.Count)
-	h.milestone.Count = count.Result.Count
+	h.milestone = &milestone
+	h.milestone.PrevCount = h.prevMilestoneCount
+	h.milestone.Count = count.Count
 
 	return nil
 }
@@ -317,7 +336,7 @@ func (h *HeimdallProvider) refreshMissedCheckpointProposal() error {
 		checkpointProposers = append(checkpointProposers, pair.Key)
 	}
 
-	h.logger.Info().
+	h.logger.Debug().
 		Any("checkpoint_proposers", checkpointProposers).
 		Any("missed_checkpoint_proposers", h.missedCheckpointProposers).
 		Msg("Refreshing missed checkpoint proposal")

@@ -299,6 +299,7 @@ type MilestoneObserver struct {
 	count      *prometheus.GaugeVec
 	startBlock *prometheus.GaugeVec
 	endBlock   *prometheus.GaugeVec
+	observed   *prometheus.CounterVec
 	blockRange *prometheus.HistogramVec
 }
 
@@ -315,6 +316,7 @@ func (o *MilestoneObserver) Notify(ctx context.Context, m Message) {
 	o.endBlock.WithLabelValues(m.Network().GetName(), m.Provider()).Set(end)
 
 	if milestone.Count > milestone.PrevCount {
+		o.observed.WithLabelValues(m.Network().GetName(), m.Provider()).Inc()
 		o.blockRange.WithLabelValues(m.Network().GetName(), m.Provider()).Observe(end - start)
 	}
 }
@@ -327,6 +329,7 @@ func (o *MilestoneObserver) Register(eb *EventBus) {
 	o.count = metrics.NewGauge(metrics.Heimdall, "milestone_count", "The milestone count")
 	o.startBlock = metrics.NewGauge(metrics.Heimdall, "milestone_start_block", "The milestone start block")
 	o.endBlock = metrics.NewGauge(metrics.Heimdall, "milestone_end_block", "The milestone end block")
+	o.observed = metrics.NewCounter(metrics.Heimdall, "milestone_observed", "The number of milestones observed")
 	o.blockRange = metrics.NewHistogram(
 		metrics.Heimdall,
 		"milestone_block_range",
@@ -336,7 +339,15 @@ func (o *MilestoneObserver) Register(eb *EventBus) {
 }
 
 func (o *MilestoneObserver) GetCollectors() []prometheus.Collector {
-	return []prometheus.Collector{o.time, o.height, o.count, o.startBlock, o.endBlock, o.blockRange}
+	return []prometheus.Collector{
+		o.time,
+		o.height,
+		o.count,
+		o.startBlock,
+		o.endBlock,
+		o.observed,
+		o.blockRange,
+	}
 }
 
 // HeimdallMissedBlockProposal maps the block number to the list of proposers
