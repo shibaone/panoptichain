@@ -446,7 +446,7 @@ func (o *HeimdallCheckpointObserver) GetCollectors() []prometheus.Collector {
 	return []prometheus.Collector{o.startBlock, o.endBlock, o.id, o.time}
 }
 
-type ValidatorV1 HeimdallResult[api.Validator]
+type ValidatorV1 HeimdallResult[api.ValidatorV1]
 
 type HeimdallMissedCheckpointProposalObserver struct {
 	missedCheckpointProposal *prometheus.CounterVec
@@ -473,7 +473,7 @@ func (o *HeimdallMissedCheckpointProposalObserver) GetCollectors() []prometheus.
 	return []prometheus.Collector{o.missedCheckpointProposal}
 }
 
-type ValidatorsV1 HeimdallResult[[]api.Validator]
+type ValidatorsV1 HeimdallResult[[]api.ValidatorV1]
 
 type HeimdallMissedMilestoneProposal struct {
 	missedMilestoneProposal *prometheus.CounterVec

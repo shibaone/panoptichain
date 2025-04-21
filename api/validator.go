@@ -17,8 +17,20 @@ import (
 // refreshInterval is how long validators will be cached for.
 const refreshInterval = time.Hour
 
-// Validator represents a Polygon PoS validator.
-type Validator struct {
+type Validator interface {
+	GetID() uint64
+	GetSigner() string
+	GetStartEpoch() uint64
+	GetEndEpoch() uint64
+	GetNonce() uint64
+	GetPower() uint64
+	GetPubKey() string
+	GetLastUpdated() string
+	IsJailed() bool
+}
+
+// ValidatorV1 represents a Polygon PoS validator from Heimdall v1.
+type ValidatorV1 struct {
 	ID          uint64 `json:"ID"`
 	Signer      string `json:"signer"`
 	StartEpoch  uint64 `json:"startEpoch"`
@@ -31,26 +43,63 @@ type Validator struct {
 	Accum       int64  `json:"accum"`
 }
 
+func (v ValidatorV1) GetID() uint64          { return v.ID }
+func (v ValidatorV1) GetSigner() string      { return v.Signer }
+func (v ValidatorV1) GetStartEpoch() uint64  { return v.StartEpoch }
+func (v ValidatorV1) GetEndEpoch() uint64    { return v.EndEpoch }
+func (v ValidatorV1) GetNonce() uint64       { return v.Nonce }
+func (v ValidatorV1) GetPower() uint64       { return v.Power }
+func (v ValidatorV1) GetPubKey() string      { return v.PubKey }
+func (v ValidatorV1) GetLastUpdated() string { return v.LastUpdated }
+func (v ValidatorV1) IsJailed() bool         { return v.Jailed }
+func (v ValidatorV1) GetAccum() int64        { return v.Accum }
+
+// ValidatorV2 represents a Polygon PoS validator from Heimdall v2.
+type ValidatorV2 struct {
+	ID               uint64 `json:"val_id,string"`
+	Signer           string `json:"signer"`
+	StartEpoch       uint64 `json:"start_epoch,string"`
+	EndEpoch         uint64 `json:"end_epoch,string"`
+	Nonce            uint64 `json:"nonce,string"`
+	Power            uint64 `json:"voting_power,string"`
+	PubKey           string `json:"pub_key"`
+	LastUpdated      string `json:"last_updated"`
+	Jailed           bool   `json:"jailed"`
+	ProposerPriority int64  `json:"proposer_priority,string"`
+}
+
+func (v ValidatorV2) GetID() uint64              { return v.ID }
+func (v ValidatorV2) GetSigner() string          { return v.Signer }
+func (v ValidatorV2) GetStartEpoch() uint64      { return v.StartEpoch }
+func (v ValidatorV2) GetEndEpoch() uint64        { return v.EndEpoch }
+func (v ValidatorV2) GetNonce() uint64           { return v.Nonce }
+func (v ValidatorV2) GetPower() uint64           { return v.Power }
+func (v ValidatorV2) GetPubKey() string          { return v.PubKey }
+func (v ValidatorV2) GetLastUpdated() string     { return v.LastUpdated }
+func (v ValidatorV2) IsJailed() bool             { return v.Jailed }
+func (v ValidatorV2) GetProposerPriority() int64 { return v.ProposerPriority }
+
 // ValidatorSetV1 is a set of Polygon PoS validators from Heimdall v1.
 type ValidatorSetV1 struct {
 	Height string `json:"height"`
 	Result struct {
-		Validators []*Validator `json:"validators"`
-		Proposer   *Validator   `json:"proposer"`
+		Validators []ValidatorV1 `json:"validators"`
+		Proposer   *ValidatorV1  `json:"proposer"`
 	} `json:"result"`
 }
 
-// ValidatorSetV1 is a set of Polygon PoS validators from Heimdall v2.
+// ValidatorSetV2 is a set of Polygon PoS validators from Heimdall v2.
 type ValidatorSetV2 struct {
 	ValidatorSet struct {
-		Validators []*Validator `json:"validators"`
-		Proposer   *Validator   `json:"proposer"`
+		Validators       []ValidatorV2 `json:"validators"`
+		Proposer         *ValidatorV2  `json:"proposer"`
+		TotalVotingPower uint64        `json:"total_voting_power,string"`
 	} `json:"validator_set"`
 }
 
 // ValidatorsCache holds a cache of validators with a time-to-live (TTL).
 type ValidatorsCache struct {
-	validators []*Validator
+	validators []Validator
 	ttl        time.Time
 }
 
@@ -59,7 +108,7 @@ var cache sync.Map
 
 // Validators queries the Heimdall API for the validator set. The validator set
 // is cached based on the refreshInterval.
-func Validators(n network.Network) ([]*Validator, error) {
+func Validators(n network.Network) ([]Validator, error) {
 	var path *string
 	var version uint = 1
 
@@ -87,7 +136,7 @@ func Validators(n network.Network) ([]*Validator, error) {
 		}
 	}
 
-	var validators []*Validator
+	var validators []Validator
 	var err error
 	switch version {
 	case 1:
@@ -108,54 +157,64 @@ func Validators(n network.Network) ([]*Validator, error) {
 	return validators, nil
 }
 
-func getValidatorsV1(path string) ([]*Validator, error) {
+func getValidatorsV1(path string) ([]Validator, error) {
 	path, err := url.JoinPath(path, "staking/validator-set")
 	if err != nil {
 		return nil, err
 	}
 
-	var body *ValidatorSetV1
+	var body ValidatorSetV1
 	err = GetJSON(path, &body)
 	if err != nil {
 		return nil, err
 	}
 
-	if body == nil || body.Result.Validators == nil {
+	if body.Result.Validators == nil {
 		return nil, errors.New("empty validator body response")
 	}
 
-	return body.Result.Validators, nil
+	validators := make([]Validator, len(body.Result.Validators))
+	for i, v := range body.Result.Validators {
+		validators[i] = v
+	}
+
+	return validators, nil
 }
 
-func getValidatorsV2(path string) ([]*Validator, error) {
+func getValidatorsV2(path string) ([]Validator, error) {
 	path, err := url.JoinPath(path, "stake/validator-set")
 	if err != nil {
 		return nil, err
 	}
 
-	var body *ValidatorSetV2
+	var body ValidatorSetV2
 	err = GetJSON(path, &body)
 	if err != nil {
 		return nil, err
 	}
 
-	if body == nil || body.ValidatorSet.Validators == nil {
+	if body.ValidatorSet.Validators == nil {
 		return nil, errors.New("empty validator body response")
 	}
 
-	return body.ValidatorSet.Validators, nil
+	validators := make([]Validator, len(body.ValidatorSet.Validators))
+	for i, v := range body.ValidatorSet.Validators {
+		validators[i] = v
+	}
+
+	return validators, nil
 }
 
 // Signers maps the validator signer to the validator.
-func Signers(n network.Network) (map[string]*Validator, error) {
+func Signers(n network.Network) (map[string]Validator, error) {
 	validators, err := Validators(n)
 	if err != nil {
 		return nil, err
 	}
 
-	signers := make(map[string]*Validator)
+	signers := make(map[string]Validator)
 	for _, validator := range validators {
-		signers[validator.Signer] = validator
+		signers[validator.GetSigner()] = validator
 	}
 
 	return signers, nil

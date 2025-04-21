@@ -40,8 +40,8 @@ type HeimdallProvider struct {
 
 	milestone                *observer.HeimdallMilestone
 	prevMilestoneCount       uint64
-	milestoneProposers       []api.Validator
-	prevMilestoneProposers   []api.Validator
+	milestoneProposers       []api.ValidatorV1
+	prevMilestoneProposers   []api.ValidatorV1
 	missedMilestoneProposers []string
 
 	span *observer.HeimdallSpan
