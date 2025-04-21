@@ -392,19 +392,19 @@ func (h *HeimdallProvider) refreshMissedCheckpointProposal() error {
 
 	h.missedCheckpointProposers = nil
 
-	proposer, err := h.getCurrentCheckpointProposer()
+	current, err := h.getCurrentCheckpointProposer()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get Heimdall current checkpoint proposer")
 		return err
 	}
 
-	signer := proposer.GetSigner()
+	signer := current.GetSigner()
 	if _, ok := h.checkpointProposers.Get(signer); !ok {
 		h.checkpointProposers.Set(signer, struct{}{})
 	}
 
-	latestProposer := h.checkpoint.Proposer
-	if _, ok := h.checkpointProposers.Get(latestProposer); !ok {
+	latest := h.checkpoint.Proposer
+	if _, ok := h.checkpointProposers.Get(latest); !ok {
 		return nil
 	}
 
@@ -412,7 +412,7 @@ func (h *HeimdallProvider) refreshMissedCheckpointProposal() error {
 		proposer := pair.Key
 
 		h.checkpointProposers.Delete(proposer)
-		if proposer == latestProposer {
+		if proposer == latest {
 			break
 		}
 
