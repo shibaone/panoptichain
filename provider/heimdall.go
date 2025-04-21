@@ -14,6 +14,7 @@ import (
 
 	"github.com/0xPolygon/panoptichain/api"
 	"github.com/0xPolygon/panoptichain/blockbuffer"
+	"github.com/0xPolygon/panoptichain/log"
 	"github.com/0xPolygon/panoptichain/network"
 	"github.com/0xPolygon/panoptichain/observer"
 	"github.com/0xPolygon/panoptichain/observer/topics"
@@ -343,33 +344,61 @@ func (h *HeimdallProvider) refreshCheckpoint() error {
 	return nil
 }
 
+func (h *HeimdallProvider) getCurrentCheckpointProposer() (api.Validator, error) {
+	var proposer api.Validator
+
+	switch h.version {
+	case 1:
+		path, err := url.JoinPath(h.HeimdallURL, "staking/current-proposer")
+		if err != nil {
+			return nil, err
+		}
+
+		var v1 observer.HeimdallCurrentCheckpointProposerV1
+		err = api.GetJSON(path, &v1)
+		if err != nil {
+			return nil, err
+		}
+
+		proposer = v1.Result
+	case 2:
+		path, err := url.JoinPath(h.HeimdallURL, "checkpoint/proposers/current")
+		if err != nil {
+			return nil, err
+		}
+
+		var v2 observer.HeimdallCurrentCheckpointProposerV2
+		err = api.GetJSON(path, &v2)
+		if err != nil {
+			return nil, err
+		}
+
+		proposer = v2.Validator
+	}
+
+	return proposer, nil
+}
+
 func (h *HeimdallProvider) refreshMissedCheckpointProposal() error {
-	var checkpointProposers []string
+	var proposers []string
 	for pair := h.checkpointProposers.Oldest(); pair != nil; pair = pair.Next() {
-		checkpointProposers = append(checkpointProposers, pair.Key)
+		proposers = append(proposers, pair.Key)
 	}
 
 	h.logger.Debug().
-		Any("checkpoint_proposers", checkpointProposers).
+		Any("checkpoint_proposers", proposers).
 		Any("missed_checkpoint_proposers", h.missedCheckpointProposers).
 		Msg("Refreshing missed checkpoint proposal")
 
 	h.missedCheckpointProposers = nil
-	var currentProposer *observer.ValidatorV1
 
-	path, err := url.JoinPath(h.HeimdallURL, "staking/current-proposer")
+	proposer, err := h.getCurrentCheckpointProposer()
 	if err != nil {
-		h.logger.Error().Err(err).Msg("Failed to get Heimdall current checkpoint proposer path")
+		log.Error().Err(err).Msg("Failed to get Heimdall current checkpoint proposer")
 		return err
 	}
 
-	err = api.GetJSON(path, &currentProposer)
-	if err != nil {
-		h.logger.Error().Err(err).Msg("Failed to get Heimdall current checkpoint proposer")
-		return err
-	}
-
-	signer := currentProposer.Result.Signer
+	signer := proposer.GetSigner()
 	if _, ok := h.checkpointProposers.Get(signer); !ok {
 		h.checkpointProposers.Set(signer, struct{}{})
 	}
