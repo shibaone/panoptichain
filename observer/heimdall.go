@@ -274,24 +274,28 @@ func (o *HeimdallSignatureCountObserver) GetCollectors() []prometheus.Collector 
 }
 
 type HeimdallMilestoneCount struct {
-	Count uint64 `json:"count"`
+	Count uint64 `json:"count,string"`
 }
 
 type HeimdallMilestoneCountV1 HeimdallResult[HeimdallMilestoneCount]
 
 type HeimdallMilestone struct {
 	Proposer    string `json:"proposer"`
-	StartBlock  uint64 `json:"start_block"`
-	EndBlock    uint64 `json:"end_block"`
+	StartBlock  uint64 `json:"start_block,string"`
+	EndBlock    uint64 `json:"end_block,string"`
 	Hash        string `json:"hash"`
-	BorChainID  string `json:"bor_chain_id"`
+	BorChainID  uint   `json:"bor_chain_id,string"`
 	MilestoneID string `json:"milestone_id"`
-	Timestamp   uint64 `json:"timestamp"`
+	Timestamp   uint64 `json:"timestamp,string"`
 	Count       uint64
 	PrevCount   uint64
 }
 
 type HeimdallMilestoneV1 HeimdallResult[HeimdallMilestone]
+
+type HeimdallMilestoneV2 struct {
+	Milestone HeimdallMilestone `json:"milestone"`
+}
 
 type MilestoneObserver struct {
 	time       *prometheus.GaugeVec

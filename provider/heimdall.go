@@ -297,7 +297,10 @@ func (h *HeimdallProvider) refreshMilestone() error {
 			milestone = v1.Result
 		}
 	case 2:
-		err = api.GetJSON(path, &milestone)
+		var v2 observer.HeimdallMilestoneV2
+		if err = api.GetJSON(path, &v2); err == nil {
+			milestone = v2.Milestone
+		}
 	}
 
 	if err != nil {
