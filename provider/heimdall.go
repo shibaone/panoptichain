@@ -40,7 +40,7 @@ type HeimdallProvider struct {
 	missedCheckpointProposers []string
 
 	milestone                *observer.HeimdallMilestone
-	prevMilestoneCount       uint64
+	prevMilestoneCount       int64
 	milestoneProposers       []api.ValidatorV1
 	prevMilestoneProposers   []api.ValidatorV1
 	missedMilestoneProposers []string
@@ -311,7 +311,7 @@ func (h *HeimdallProvider) refreshMilestone() error {
 
 	h.milestone = &milestone
 	h.milestone.PrevCount = h.prevMilestoneCount
-	h.milestone.Count = count.Count
+	h.milestone.Count, _ = count.Count.Int64()
 
 	return nil
 }
