@@ -109,12 +109,12 @@ func (b *HeimdallBlock) NumTxs() (*big.Int, error) {
 }
 
 func (b *HeimdallBlock) TotalTxs() (*big.Int, error) {
-	totalTxs, ok := new(big.Int).SetString(b.Result.Block.Header.TotalTxs, 10)
+	txs, ok := new(big.Int).SetString(b.Result.Block.Header.TotalTxs, 10)
 	if !ok {
 		return nil, errors.New("failed to parse total number of transactions")
 	}
 
-	return totalTxs, nil
+	return txs, nil
 }
 
 func (b *HeimdallBlock) PreCommits() []*PreCommit {
@@ -397,19 +397,23 @@ func (o *HeimdallMissedBlockProposalObserver) GetCollectors() []prometheus.Colle
 
 type HeimdallCheckpointBuffer struct {
 	Proposer   string `json:"proposer"`
-	StartBlock uint64 `json:"start_block"`
-	EndBlock   uint64 `json:"end_block"`
+	StartBlock uint64 `json:"start_block,string"`
+	EndBlock   uint64 `json:"end_block,string"`
 	RootHash   string `json:"root_hash"`
-	BorChainID string `json:"bor_chain_id"`
-	Timestamp  uint64 `json:"timestamp"`
+	BorChainID uint   `json:"bor_chain_id,string"`
+	Timestamp  uint64 `json:"timestamp,string"`
 }
 
 type HeimdallCheckpoint struct {
 	HeimdallCheckpointBuffer
-	ID uint64 `json:"id"`
+	ID uint64 `json:"id,string"`
 }
 
 type HeimdallCheckpointV1 HeimdallResult[HeimdallCheckpoint]
+
+type HeimdallCheckpointV2 struct {
+	Checkpoint HeimdallCheckpoint `json:"checkpoint"`
+}
 
 type HeimdallCheckpointObserver struct {
 	startBlock *prometheus.GaugeVec

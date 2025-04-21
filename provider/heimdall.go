@@ -74,13 +74,13 @@ func (h *HeimdallProvider) RefreshState(ctx context.Context) error {
 
 	h.logger.Debug().Msg("Refreshing Heimdall state")
 
-	h.refreshBlockBuffer()
+	// h.refreshBlockBuffer()
 	h.refreshMilestone()
 	h.refreshMissedMilestoneProposal()
 	h.refreshCheckpoint()
 	h.refreshMissedCheckpointProposal()
-	h.refreshMissedBlockProposal()
-	h.refreshSpan()
+	// h.refreshMissedBlockProposal()
+	// h.refreshSpan()
 
 	return nil
 }
@@ -248,7 +248,7 @@ func (h *HeimdallProvider) fillRange(start uint64) {
 	}
 }
 
-func (h *HeimdallProvider) refreshHeimdallMilestoneCount() (*observer.HeimdallMilestoneCount, error) {
+func (h *HeimdallProvider) getHeimdallMilestoneCount() (*observer.HeimdallMilestoneCount, error) {
 	path, err := url.JoinPath(h.HeimdallURL, "milestone/count")
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone count path")
@@ -277,7 +277,7 @@ func (h *HeimdallProvider) refreshMilestone() error {
 		h.prevMilestoneCount = h.milestone.Count
 	}
 
-	count, err := h.refreshHeimdallMilestoneCount()
+	count, err := h.getHeimdallMilestoneCount()
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall milestone count")
 		return err
@@ -322,13 +322,23 @@ func (h *HeimdallProvider) refreshCheckpoint() error {
 		return err
 	}
 
-	var checkpoint observer.HeimdallCheckpointV1
-	err = api.GetJSON(path, &checkpoint)
+	switch h.version {
+	case 1:
+		var v1 observer.HeimdallCheckpointV1
+		if err = api.GetJSON(path, &v1); err == nil {
+			h.checkpoint = &v1.Result
+		}
+	case 2:
+		var v2 observer.HeimdallCheckpointV2
+		if err = api.GetJSON(path, &v2); err == nil {
+			h.checkpoint = &v2.Checkpoint
+		}
+	}
+
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall latest checkpoint")
 		return err
 	}
-	h.checkpoint = &checkpoint.Result
 
 	return nil
 }
