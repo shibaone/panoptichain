@@ -221,14 +221,14 @@ func (h *HeimdallProvider) getValidators(height uint64) *observer.HeimdallValida
 		path = fmt.Sprintf("%s?height=%d", path, height)
 	}
 
-	validators := &observer.HeimdallValidators{}
+	var validators observer.HeimdallValidators
 	err = api.GetJSON(path, &validators)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall validators")
 		return nil
 	}
 
-	return validators
+	return &validators
 }
 
 func (h *HeimdallProvider) fillRange(start uint64) {
@@ -319,7 +319,7 @@ func (h *HeimdallProvider) refreshCheckpoint() error {
 		return err
 	}
 
-	checkpoint := observer.HeimdallCheckpointV1{}
+	var checkpoint observer.HeimdallCheckpointV1
 	err = api.GetJSON(path, &checkpoint)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall latest checkpoint")
@@ -331,7 +331,7 @@ func (h *HeimdallProvider) refreshCheckpoint() error {
 }
 
 func (h *HeimdallProvider) refreshMissedCheckpointProposal() error {
-	checkpointProposers := []string{}
+	var checkpointProposers []string
 	for pair := h.checkpointProposers.Oldest(); pair != nil; pair = pair.Next() {
 		checkpointProposers = append(checkpointProposers, pair.Key)
 	}
@@ -404,7 +404,7 @@ func (h *HeimdallProvider) refreshMissedBlockProposal() error {
 			return pi > pj
 		})
 
-		proposers := []string{}
+		var proposers []string
 		for _, validator := range validators {
 			if validator.Address == proposer {
 				break
@@ -479,7 +479,7 @@ func (h *HeimdallProvider) refreshSpan() error {
 		return err
 	}
 
-	span := observer.HeimdallSpanV1{}
+	var span observer.HeimdallSpanV1
 	err = api.GetJSON(url, &span)
 	if err != nil {
 		h.logger.Error().Err(err).Msg("Failed to get Heimdall latest span")
