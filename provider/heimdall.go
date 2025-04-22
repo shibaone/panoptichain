@@ -45,7 +45,7 @@ type HeimdallProvider struct {
 	prevMilestoneProposers   []api.ValidatorV1
 	missedMilestoneProposers []string
 
-	span *observer.HeimdallSpan
+	span observer.HeimdallSpan
 
 	refreshStateTime *time.Duration
 }
@@ -519,19 +519,38 @@ func (h *HeimdallProvider) refreshMissedMilestoneProposal() error {
 }
 
 func (h *HeimdallProvider) refreshSpan() error {
-	url, err := url.JoinPath(h.HeimdallURL, "bor/latest-span")
-	if err != nil {
-		h.logger.Error().Err(err).Msg("Failed to get Heimdall latest span path")
-		return err
-	}
+	switch h.version {
+	case 1:
+		url, err := url.JoinPath(h.HeimdallURL, "bor/latest-span")
+		if err != nil {
+			h.logger.Error().Err(err).Msg("Failed to get Heimdall v1 latest span path")
+			return err
+		}
 
-	var span observer.HeimdallSpanV1
-	err = api.GetJSON(url, &span)
-	if err != nil {
-		h.logger.Error().Err(err).Msg("Failed to get Heimdall latest span")
-		return err
+		var v1 observer.HeimdallSpanV1
+		err = api.GetJSON(url, &v1)
+		if err != nil {
+			h.logger.Error().Err(err).Msg("Failed to get Heimdall v1 latest span")
+			return err
+		}
+
+		h.span = v1
+	case 2:
+		url, err := url.JoinPath(h.HeimdallURL, "bor/span/latest")
+		if err != nil {
+			h.logger.Error().Err(err).Msg("Failed to get Heimdall v2 latest span path")
+			return err
+		}
+
+		var v2 observer.HeimdallSpanV2
+		err = api.GetJSON(url, &v2)
+		if err != nil {
+			h.logger.Error().Err(err).Msg("Failed to get Heimdall v2 latest span")
+			return err
+		}
+
+		h.span = v2
 	}
-	h.span = &span.Result
 
 	return nil
 }

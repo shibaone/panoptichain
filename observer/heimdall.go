@@ -479,16 +479,35 @@ func (o *HeimdallMissedMilestoneProposal) GetCollectors() []prometheus.Collector
 	return []prometheus.Collector{o.missedMilestoneProposal}
 }
 
-type HeimdallSpan struct {
-	SpanID     int64 `json:"span_id"`
-	StartBlock int64 `json:"start_block"`
-	EndBlock   int64 `json:"end_block"`
+type HeimdallSpan interface {
+	GetID() uint64
+	GetStartBlock() uint64
+	GetEndBlock() uint64
 }
 
-type HeimdallSpanV1 HeimdallResult[HeimdallSpan]
+type HeimdallSpanV1 HeimdallResult[struct {
+	SpanID     uint64 `json:"span_id"`
+	StartBlock uint64 `json:"start_block"`
+	EndBlock   uint64 `json:"end_block"`
+}]
+
+func (h HeimdallSpanV1) GetID() uint64         { return h.Result.SpanID }
+func (h HeimdallSpanV1) GetStartBlock() uint64 { return h.Result.StartBlock }
+func (h HeimdallSpanV1) GetEndBlock() uint64   { return h.Result.EndBlock }
+
+type HeimdallSpanV2 struct {
+	Span struct {
+		ID         uint64 `json:"id,string"`
+		StartBlock uint64 `json:"start_block,string"`
+		EndBlock   uint64 `json:"end_block,string"`
+	} `json:"span"`
+}
+
+func (h HeimdallSpanV2) GetID() uint64         { return h.Span.ID }
+func (h HeimdallSpanV2) GetStartBlock() uint64 { return h.Span.StartBlock }
+func (h HeimdallSpanV2) GetEndBlock() uint64   { return h.Span.EndBlock }
 
 type HeimdallSpanObserver struct {
-	height     *prometheus.GaugeVec
 	spanID     *prometheus.GaugeVec
 	startBlock *prometheus.GaugeVec
 	endBlock   *prometheus.GaugeVec
@@ -497,20 +516,19 @@ type HeimdallSpanObserver struct {
 func (o *HeimdallSpanObserver) Register(eb *EventBus) {
 	eb.Subscribe(topics.Span, o)
 
-	o.height = metrics.NewGauge(metrics.Heimdall, "span_height", "The span height")
 	o.spanID = metrics.NewGauge(metrics.Heimdall, "span_id", "The span id")
 	o.startBlock = metrics.NewGauge(metrics.Heimdall, "span_start_block", "The span start block")
 	o.endBlock = metrics.NewGauge(metrics.Heimdall, "span_end_block", "The span end block")
 }
 
 func (o *HeimdallSpanObserver) Notify(ctx context.Context, m Message) {
-	span := m.Data().(*HeimdallSpan)
+	span := m.Data().(HeimdallSpan)
 
-	o.spanID.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(span.SpanID))
-	o.startBlock.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(span.StartBlock))
-	o.endBlock.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(span.EndBlock))
+	o.spanID.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(span.GetID()))
+	o.startBlock.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(span.GetStartBlock()))
+	o.endBlock.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(span.GetEndBlock()))
 }
 
 func (o *HeimdallSpanObserver) GetCollectors() []prometheus.Collector {
-	return []prometheus.Collector{o.height, o.spanID, o.startBlock, o.endBlock}
+	return []prometheus.Collector{o.spanID, o.startBlock, o.endBlock}
 }
