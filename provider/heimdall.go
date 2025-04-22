@@ -75,13 +75,13 @@ func (h *HeimdallProvider) RefreshState(ctx context.Context) error {
 
 	h.logger.Debug().Msg("Refreshing Heimdall state")
 
-	// h.refreshBlockBuffer()
+	h.refreshBlockBuffer()
 	h.refreshMilestone()
 	h.refreshMissedMilestoneProposal()
 	h.refreshCheckpoint()
 	h.refreshMissedCheckpointProposal()
-	// h.refreshMissedBlockProposal()
-	// h.refreshSpan()
+	h.refreshMissedBlockProposal()
+	h.refreshSpan()
 
 	return nil
 }
@@ -463,6 +463,10 @@ func (h *HeimdallProvider) refreshMissedBlockProposal() error {
 }
 
 func (h *HeimdallProvider) refreshMissedMilestoneProposal() error {
+	if h.version != 1 {
+		return nil
+	}
+
 	h.missedMilestoneProposers = nil
 
 	path, err := url.JoinPath(h.HeimdallURL, "staking/milestoneProposer", fmt.Sprint(500))

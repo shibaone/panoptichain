@@ -5,7 +5,6 @@ package observer
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"math/big"
 	"time"
 
@@ -52,9 +51,11 @@ type HeimdallBlock struct {
 				Time            string `json:"time"`
 				Height          string `json:"height"`
 				NumTxs          string `json:"num_txs"`
-				TotalTxs        string `json:"total_txs"`
 				ProposerAddress string `json:"proposer_address"`
 			} `json:"header"`
+			Data struct {
+				Txs []string `json:"txs"`
+			} `json:"data"`
 			LastCommit struct {
 				PreCommits []*PreCommit `json:"precommits"`
 			} `json:"last_commit"`
@@ -101,22 +102,13 @@ func (b *HeimdallBlock) Time() (uint64, error) {
 	return uint64(parsedTime.Unix()), nil
 }
 
-func (b *HeimdallBlock) NumTxs() (*big.Int, error) {
+func (b *HeimdallBlock) Txs() *big.Int {
 	txs, ok := new(big.Int).SetString(b.Result.Block.Header.NumTxs, 10)
 	if !ok {
-		return nil, errors.New("failed to parse number of transactions")
+		return big.NewInt(int64(len(b.Result.Block.Data.Txs)))
 	}
 
-	return txs, nil
-}
-
-func (b *HeimdallBlock) TotalTxs() (*big.Int, error) {
-	txs, ok := new(big.Int).SetString(b.Result.Block.Header.TotalTxs, 10)
-	if !ok {
-		return nil, errors.New("failed to parse total number of transactions")
-	}
-
-	return txs, nil
+	return txs
 }
 
 func (b *HeimdallBlock) PreCommits() []*PreCommit {
@@ -155,76 +147,13 @@ func (o *HeimdallBlockIntervalObserver) GetCollectors() []prometheus.Collector {
 	return []prometheus.Collector{o.blockInterval}
 }
 
-type HeimdallTransactionCountObserver struct {
-	transactionCount *prometheus.HistogramVec
+type HeimdallBlockObserver struct {
+	height   *prometheus.GaugeVec
+	txs      *prometheus.HistogramVec
+	totalTxs *prometheus.CounterVec
 }
 
-func (o *HeimdallTransactionCountObserver) Register(eb *EventBus) {
-	eb.Subscribe(topics.NewHeimdallBlock, o)
-
-	o.transactionCount = metrics.NewHistogram(
-		metrics.Heimdall,
-		"transactions_per_block",
-		"The number of transactions per Heimdall block",
-		newExponentialBuckets(2, 11),
-	)
-}
-
-func (o *HeimdallTransactionCountObserver) Notify(ctx context.Context, m Message) {
-	logger := NewLogger(o, m)
-
-	block := m.Data().(*HeimdallBlock)
-
-	txs, err := block.NumTxs()
-	if err != nil {
-		logger.Error().Msg("Failed to get number of transactions")
-		return
-	}
-
-	o.transactionCount.WithLabelValues(m.Network().GetName(), m.Provider()).Observe(float64(txs.Uint64()))
-}
-
-func (o *HeimdallTransactionCountObserver) GetCollectors() []prometheus.Collector {
-	return []prometheus.Collector{o.transactionCount}
-}
-
-type HeimdallTotalTransactionCountObserver struct {
-	totalTransactionCount *prometheus.CounterVec
-}
-
-func (o *HeimdallTotalTransactionCountObserver) Register(eb *EventBus) {
-	eb.Subscribe(topics.NewHeimdallBlock, o)
-
-	o.totalTransactionCount = metrics.NewCounter(
-		metrics.Heimdall,
-		"total_transaction_count",
-		"The number of total transactions for Heimdall",
-	)
-}
-
-func (o *HeimdallTotalTransactionCountObserver) Notify(ctx context.Context, m Message) {
-	logger := NewLogger(o, m)
-
-	block := m.Data().(*HeimdallBlock)
-
-	txs, err := block.TotalTxs()
-	if err != nil {
-		logger.Error().Msg("Failed to get total number of transactions")
-		return
-	}
-
-	o.totalTransactionCount.WithLabelValues(m.Network().GetName(), m.Provider()).Add(float64(txs.Uint64()))
-}
-
-func (o *HeimdallTotalTransactionCountObserver) GetCollectors() []prometheus.Collector {
-	return []prometheus.Collector{o.totalTransactionCount}
-}
-
-type HeimdallHeightObserver struct {
-	height *prometheus.GaugeVec
-}
-
-func (o *HeimdallHeightObserver) Register(eb *EventBus) {
+func (o *HeimdallBlockObserver) Register(eb *EventBus) {
 	eb.Subscribe(topics.NewHeimdallBlock, o)
 
 	o.height = metrics.NewGauge(
@@ -232,9 +161,20 @@ func (o *HeimdallHeightObserver) Register(eb *EventBus) {
 		"height",
 		"The block height for Heimdall",
 	)
+	o.txs = metrics.NewHistogram(
+		metrics.Heimdall,
+		"transactions_per_block",
+		"The number of transactions per Heimdall block",
+		newExponentialBuckets(2, 11),
+	)
+	o.totalTxs = metrics.NewCounter(
+		metrics.Heimdall,
+		"total_transaction_count",
+		"The number of total transactions for Heimdall",
+	)
 }
 
-func (o *HeimdallHeightObserver) Notify(ctx context.Context, m Message) {
+func (o *HeimdallBlockObserver) Notify(ctx context.Context, m Message) {
 	logger := NewLogger(o, m)
 
 	block := m.Data().(*HeimdallBlock)
@@ -242,14 +182,18 @@ func (o *HeimdallHeightObserver) Notify(ctx context.Context, m Message) {
 	height := block.Number()
 	if height == nil {
 		logger.Error().Msg("Failed to get Heimdall block number")
-		return
+	} else {
+		h, _ := height.Float64()
+		o.height.WithLabelValues(m.Network().GetName(), m.Provider()).Set(h)
 	}
 
-	o.height.WithLabelValues(m.Network().GetName(), m.Provider()).Set(float64(height.Uint64()))
+	txs, _ := block.Txs().Float64()
+	o.txs.WithLabelValues(m.Network().GetName(), m.Provider()).Observe(txs)
+	o.totalTxs.WithLabelValues(m.Network().GetName(), m.Provider()).Add(txs)
 }
 
-func (o *HeimdallHeightObserver) GetCollectors() []prometheus.Collector {
-	return []prometheus.Collector{o.height}
+func (o *HeimdallBlockObserver) GetCollectors() []prometheus.Collector {
+	return []prometheus.Collector{o.height, o.txs, o.totalTxs}
 }
 
 type HeimdallSignatureCountObserver struct {
