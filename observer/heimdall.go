@@ -170,7 +170,7 @@ func (o *HeimdallBlockObserver) Register(eb *EventBus) {
 	o.totalTxs = metrics.NewCounter(
 		metrics.Heimdall,
 		"total_transaction_count",
-		"The number of total transactions for Heimdall",
+		"The number of total transactions observed for Heimdall",
 	)
 }
 
