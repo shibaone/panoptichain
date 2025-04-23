@@ -16,7 +16,7 @@ const (
 	SensorBlocks                                       // *observer.SensorBlocks
 	SensorBlockEvents                                  // *observer.SensorBlockEvents
 	BorMissedBlockProposal                             // observer.MissedBlockProposal
-	HeimdallMissedBlockProposal                        // *observer.HeimdallMissedBlockProposal
+	HeimdallMissedBlockProposal                        // observer.HeimdallMissedBlockProposal
 	Checkpoint                                         // *observer.HeimdallCheckpoint
 	MissedCheckpointProposal                           // []string
 	MissedMilestoneProposal                            // []string
@@ -33,7 +33,7 @@ const (
 	BridgeEventTimes                                   // *observer.BridgeEventTimes
 	ClaimEventTimes                                    // *observer.ClaimEventTimes
 	RollupManager                                      // *observer.RollupManager
-	Span                                               // *observer.HeimdallSpan
+	Span                                               // observer.HeimdallSpan
 	TimeToMine                                         // float64
 	AccountBalances                                    // observer.AccountBalances
 	TrustedBatch                                       // *zkevmtypes.Batch

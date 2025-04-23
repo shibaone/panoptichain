@@ -345,6 +345,36 @@ Variable Labels:
 - network
 - provider
 
+## HeimdallBlockObserver
+
+
+### panoptichain_heimdall_height
+The block height for Heimdall
+
+Metric Type: GaugeVec
+
+Variable Labels:
+- network
+- provider
+
+### panoptichain_heimdall_transactions_per_block
+The number of transactions per Heimdall block
+
+Metric Type: HistogramVec
+
+Variable Labels:
+- network
+- provider
+
+### panoptichain_heimdall_total_transaction_count
+The number of total transactions observed for Heimdall
+
+Metric Type: CounterVec
+
+Variable Labels:
+- network
+- provider
+
 ## HeimdallBlockIntervalObserver
 
 
@@ -389,18 +419,6 @@ Variable Labels:
 
 ### panoptichain_heimdall_time_since_last_checkpoint
 The time since last checkpoint
-
-Metric Type: GaugeVec
-
-Variable Labels:
-- network
-- provider
-
-## HeimdallHeightObserver
-
-
-### panoptichain_heimdall_height
-The block height for Heimdall
 
 Metric Type: GaugeVec
 
@@ -459,44 +477,11 @@ Variable Labels:
 - network
 - provider
 
-## HeimdallTotalTransactionCountObserver
-
-
-### panoptichain_heimdall_total_transaction_count
-The number of total transactions for Heimdall
-
-Metric Type: CounterVec
-
-Variable Labels:
-- network
-- provider
-
-## HeimdallTransactionCountObserver
-
-
-### panoptichain_heimdall_transactions_per_block
-The number of transactions per Heimdall block
-
-Metric Type: HistogramVec
-
-Variable Labels:
-- network
-- provider
-
 ## MilestoneObserver
 
 
 ### panoptichain_heimdall_time_since_last_milestone
 The time since last milestone
-
-Metric Type: GaugeVec
-
-Variable Labels:
-- network
-- provider
-
-### panoptichain_heimdall_milestone_block_height
-The milestone block height
 
 Metric Type: GaugeVec
 
@@ -526,6 +511,15 @@ Variable Labels:
 The milestone end block
 
 Metric Type: GaugeVec
+
+Variable Labels:
+- network
+- provider
+
+### panoptichain_heimdall_milestone_observed
+The number of milestones observed
+
+Metric Type: CounterVec
 
 Variable Labels:
 - network
@@ -922,15 +916,6 @@ Variable Labels:
 
 ## HeimdallSpanObserver
 
-
-### panoptichain_heimdall_span_height
-The span height
-
-Metric Type: GaugeVec
-
-Variable Labels:
-- network
-- provider
 
 ### panoptichain_heimdall_span_id
 The span id
