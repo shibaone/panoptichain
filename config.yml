@@ -176,6 +176,11 @@
     ## The number of blocks to query for logs to populate metrics. Setting this
     ## value to 0 will not populate metrics with any historical data.
     ##
+    ## @param is_geth - boolean - optional - default false
+    ## @env PANOTICHAIN_PROVIDERS_RPC_0_IS_GETH - boolean - optional - default false
+    ## Whether the underlying RPC node is running the geth client. If enabled,
+    ## this makes requests to the geth specific `txpool_*` RPC endpoints.
+    ##
     ## @param accounts - list of strings - optional
     ## @env PANOPTICHAIN_PROVIDERS_RPC_0_ACCOUNTS - list of strings - optional
     ## Query the balance of specific accounts.

@@ -56,6 +56,7 @@ type RPCProvider struct {
 	accountBalances  observer.AccountBalances
 	timeToFinalized  *uint64
 	blockLookBack    uint64
+	isGeth           bool
 
 	// PoS
 	stateSync            map[bool]*observer.StateSync
@@ -102,6 +103,7 @@ type RPCProviderOpts struct {
 	TimeToMine    *config.TimeToMine
 	Accounts      []string
 	BlockLookBack uint64
+	IsGeth        bool
 }
 
 // NewRPCProvider creates a new RPC provider and configures it's event bus.
@@ -137,6 +139,7 @@ func NewRPCProvider(opts RPCProviderOpts) *RPCProvider {
 		trustedSequencerURL:  make(chan string),
 		rollupContracts:      make(map[uint32]common.Address),
 		blockLookBack:        opts.BlockLookBack,
+		isGeth:               opts.IsGeth,
 	}
 }
 
@@ -167,7 +170,10 @@ func (r *RPCProvider) RefreshState(ctx context.Context) error {
 		r.refreshMissedBlockProposal(ctx, c)
 	}
 
-	r.refreshTxPoolStatus(ctx, c)
+	if r.isGeth {
+		r.refreshTxPoolStatus(ctx, c)
+	}
+
 	r.refreshTimeToMine(ctx, c)
 	r.refreshAccountBalances(ctx, c)
 
