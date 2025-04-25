@@ -30,28 +30,41 @@ type Providers struct {
 
 // RPC defines the various RPC providers that will be monitored.
 type RPC struct {
-	Name          string            `mapstructure:"name"`
-	URL           string            `mapstructure:"url" validate:"url,required_with=Name"`
-	Label         string            `mapstructure:"label" validate:"required_with=Name"`
-	Interval      uint              `mapstructure:"interval"`
-	Contracts     ContractAddresses `mapstructure:"contracts"`
-	TimeToMine    *TimeToMine       `mapstructure:"time_to_mine"`
-	Accounts      []string          `mapstructure:"accounts"`
-	BlockLookBack *uint64           `mapstructure:"block_look_back"`
+	Name          string      `mapstructure:"name"`
+	URL           string      `mapstructure:"url" validate:"url,required_with=Name"`
+	Label         string      `mapstructure:"label" validate:"required_with=Name"`
+	Interval      uint        `mapstructure:"interval"`
+	Contracts     Contracts   `mapstructure:"contracts"`
+	TimeToMine    *TimeToMine `mapstructure:"time_to_mine"`
+	Accounts      []string    `mapstructure:"accounts"`
+	BlockLookBack *uint64     `mapstructure:"block_look_back"`
 }
 
-// ContractAddresses maps specific contracts to their addresses. This is used to
+// Contracts maps specific contracts to their addresses. This is used to
 // fetch on-chain data from these contracts.
-type ContractAddresses struct {
+type Contracts struct {
 	// PoS
 	StateSyncSenderAddress   *string `mapstructure:"state_sync_sender_address"`
 	StateSyncReceiverAddress *string `mapstructure:"state_sync_receiver_address"`
 	CheckpointAddress        *string `mapstructure:"checkpoint_address"`
 
 	// zkEVM
-	GlobalExitRootL2Address *string `mapstructure:"global_exit_root_l2_address"`
-	ZkEVMBridgeAddress      *string `mapstructure:"zkevm_bridge_address"`
-	RollupManagerAddress    *string `mapstructure:"rollup_manager_address"`
+	GlobalExitRootL2Address *string       `mapstructure:"global_exit_root_l2_address"`
+	ZkEVMBridgeAddress      *string       `mapstructure:"zkevm_bridge_address"`
+	RollupManagerAddress    *string       `mapstructure:"rollup_manager_address"`
+	RollupManager           RollupManager `mapstructure:"rollup_manager"`
+}
+
+type RollupManager struct {
+	Rollups  map[uint32]Rollup `mapstructure:"rollups"`
+	Enabled  []uint32          `mapstructure:"enabled"`
+	Disabled []uint32          `mapstructure:"disabled"`
+	Timeout  string            `mapstructure:"timeout"`
+}
+
+type Rollup struct {
+	Name *string `mapstructure:"name"`
+	URL  *string `mapstructure:"url"`
 }
 
 // TimeToMine configures the time to mine provider. This periodically sends

@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"math/big"
 	"net/url"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -50,7 +51,7 @@ type RPCProvider struct {
 	blockBuffer      *blockbuffer.BlockBuffer
 	txPool           *observer.TransactionPool
 	refreshStateTime *time.Duration
-	contracts        config.ContractAddresses
+	contracts        config.Contracts
 	timeToMine       *config.TimeToMine
 	accounts         []string
 	accountBalances  observer.AccountBalances
@@ -98,7 +99,7 @@ type RPCProviderOpts struct {
 	Label         string
 	EventBus      *observer.EventBus
 	Interval      uint
-	Contracts     config.ContractAddresses
+	Contracts     config.Contracts
 	TimeToMine    *config.TimeToMine
 	Accounts      []string
 	BlockLookBack uint64
@@ -156,7 +157,7 @@ func (r *RPCProvider) RefreshState(ctx context.Context) error {
 		return err
 	}
 
-	r.refreshBlockBuffer(ctx, c)
+	err = r.refreshBlockBuffer(ctx, c)
 
 	r.refreshStateSync(ctx, c, true)
 	r.refreshStateSync(ctx, c, false)
@@ -180,7 +181,9 @@ func (r *RPCProvider) RefreshState(ctx context.Context) error {
 	r.refreshExitRootsL2(ctx, c)
 	r.refreshBridge(ctx, c)
 
-	return nil
+	// At a minimum, blocks should be able to be fetched, so return an error if
+	// they are unable to be queried.
+	return err
 }
 
 func (r *RPCProvider) PublishEvents(ctx context.Context) error {
@@ -1229,57 +1232,71 @@ func (r *RPCProvider) refreshTrustedSequencerBalance(ctx context.Context, c *eth
 	balances.POL = r.getPOL(c, address, co, balances.POL)
 }
 
-func (r *RPCProvider) newRollupNetwork(rollupID uint32) network.Network {
-	var name string
-
-	switch r.Network.GetName() {
-	case network.EthereumName:
-		name = "Mainnet"
-	case network.SepoliaName:
-		if strings.HasPrefix(r.Label, "cardona.") {
-			name = "Cardona"
-		} else if strings.HasPrefix(r.Label, "bali.") {
-			name = "Bali"
+func (r *RPCProvider) getRollupNetwork(contract *contracts.PolygonZkEVMEtrog, co *bind.CallOpts, rollupID uint32) network.Network {
+	// If there is a network name override, use it. Otherwise, fallback to the
+	// network name defined in the contract.
+	if rollup, ok := r.contracts.RollupManager.Rollups[rollupID]; ok && rollup.Name != nil {
+		if n, err := network.GetNetworkByName(*rollup.Name); err == nil {
+			return n
 		}
-	default:
-		r.logger.Error().
-			Str("network", r.Network.GetName()).
-			Msg("Failed to create new rollup network")
-
-		return nil
 	}
 
-	if len(name) == 0 {
-		r.logger.Error().Msg("New rollup network has no name")
+	name, err := contract.NetworkName(co)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get rollup network name")
 		return nil
 	}
 
 	return &config.Network{
-		Name: fmt.Sprintf("%s Rollup %d", name, rollupID),
+		Name: name,
 	}
 }
 
+// isRollupEnabled determines if a rollup with the given rollupID is enabled. By
+// default, all rollups are enabled.
+func (r *RPCProvider) isRollupEnabled(rollupID uint32) bool {
+	if slices.Contains(r.contracts.RollupManager.Disabled, rollupID) {
+		return false
+	}
+
+	if slices.Contains(r.contracts.RollupManager.Enabled, rollupID) {
+		return true
+	}
+
+	return len(r.contracts.RollupManager.Enabled) == 0
+}
+
 func (r *RPCProvider) refreshTrustedSequencerURL(ctx context.Context, contract *contracts.PolygonZkEVMEtrog, co *bind.CallOpts, rollupID uint32) error {
+	if !r.isRollupEnabled(rollupID) {
+		return nil
+	}
+
 	url, err := contract.TrustedSequencerURL(co)
 	if err != nil {
 		return err
 	}
 
-	if url == "https://decomm.invalid" {
+	network := r.getRollupNetwork(contract, co, rollupID)
+	if network == nil {
 		return nil
 	}
 
-	rollupNetwork := r.newRollupNetwork(rollupID)
-	if rollupNetwork == nil {
-		return nil
-	}
+	// The label uniquely identifies the network where the rollup manager contract
+	// is deployed. It distinguishes between rollup managers on the same L1
+	// network and includes the rollup ID.
+	label := fmt.Sprintf(
+		"%s %s Rollup %d",
+		r.Network.GetName(),
+		*r.contracts.RollupManagerAddress,
+		rollupID,
+	)
 
 	provider, ok := r.trustedSequencers[rollupID]
 	if !ok {
 		r.trustedSequencers[rollupID] = NewRPCProvider(RPCProviderOpts{
-			Network:  rollupNetwork,
+			Network:  network,
 			URL:      url,
-			Label:    url,
+			Label:    label,
 			EventBus: r.bus,
 			Interval: r.interval,
 		})
