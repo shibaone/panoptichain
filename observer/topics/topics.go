@@ -25,7 +25,6 @@ const (
 	HashDivergence                                     // *observer.HashDivergence
 	System                                             // *observer.System
 	RefreshStateTime                                   // *time.Duration
-	ZkEVMBatches                                       // observer.ZkEVMBatches
 	ExitRoots                                          // *observer.ExitRoots
 	BridgeEvent                                        // *contracts.PolygonZkEVMBridgeV2BridgeEvent
 	ClaimEvent                                         // *contracts.PolygonZkEVMBridgeV2ClaimEvent

@@ -785,17 +785,17 @@ func (o *ZkEVMBatchObserver) Notify(ctx context.Context, m Message) {
 	o.timeSinceLastVerifiedBatch.WithLabelValues(m.Network().GetName(), m.Provider()).Set(vebt)
 }
 
-func (o *ZkEVMBatchObserver) Register(eb *EventBus) {
-	eb.Subscribe(topics.ZkEVMBatches, o)
+// func (o *ZkEVMBatchObserver) Register(eb *EventBus) {
+// 	eb.Subscribe(topics.ZkEVMBatches, o)
 
-	o.trustedBatch = metrics.NewGauge(metrics.RPC, "trusted_batch", "zkEVM trusted batch number")
-	o.virtualBatch = metrics.NewGauge(metrics.RPC, "virtual_batch", "zkEVM virtual batch number")
-	o.verifiedBatch = metrics.NewGauge(metrics.RPC, "verified_batch", "zkEVM verified batch number")
+// 	o.trustedBatch = metrics.NewGauge(metrics.RPC, "trusted_batch", "zkEVM trusted batch number")
+// 	o.virtualBatch = metrics.NewGauge(metrics.RPC, "virtual_batch", "zkEVM virtual batch number")
+// 	o.verifiedBatch = metrics.NewGauge(metrics.RPC, "verified_batch", "zkEVM verified batch number")
 
-	o.timeSinceLastTrustedBatch = metrics.NewGauge(metrics.RPC, "time_since_last_trusted_batch", "time since last zkEVM trusted batch (in seconds)")
-	o.timeSinceLastVirtualBatch = metrics.NewGauge(metrics.RPC, "time_since_last_virtual_batch", "time since last zkEVM virtual batch (in seconds)")
-	o.timeSinceLastVerifiedBatch = metrics.NewGauge(metrics.RPC, "time_since_last_verified_batch", "time since last zkEVM verified batch (in seconds)")
-}
+// 	o.timeSinceLastTrustedBatch = metrics.NewGauge(metrics.RPC, "time_since_last_trusted_batch", "time since last zkEVM trusted batch (in seconds)")
+// 	o.timeSinceLastVirtualBatch = metrics.NewGauge(metrics.RPC, "time_since_last_virtual_batch", "time since last zkEVM virtual batch (in seconds)")
+// 	o.timeSinceLastVerifiedBatch = metrics.NewGauge(metrics.RPC, "time_since_last_verified_batch", "time since last zkEVM verified batch (in seconds)")
+// }
 
 func (o *ZkEVMBatchObserver) GetCollectors() []prometheus.Collector {
 	return []prometheus.Collector{

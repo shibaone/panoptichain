@@ -36,17 +36,12 @@ http:
 # observe. These are the currently known networks. See ./network/network.go for
 # details.
 #
-# - "Polygon Mumbai"
-#	- "Heimdall Mumbai"
-# - "Polygon Mainnet"
-# - "Heimdall Mainnet"
-#	- "zkEVM Mainnet"
-# - "zkEVM Testnet"
-# - "zkEVM Cardona"
-# - "zkEVM Bali"
+# - "Puppynet"
+#	- "Heimdall Puppynet"
+# - "Shibarium"
+# - "Heimdall Shibarium"
 # - "Ethereum"
 # - "Sepolia"
-# - "Goerli"
 #
 # If you wish to have a custom network name, you should define those in the
 # network section in this file.
@@ -74,9 +69,6 @@ providers:
   # - state_sync_sender_address     (PoS)
   # - checkpoint_address            (PoS)
   #
-  # - global_exit_root_l2_address   (zkEVM)
-  # - zkevm_bridge_address          (zkEVM)
-  # - rollup_manager_address        (zkEVM)
   #
   # Some of these contracts are versioned contracts, which means they take in a
   # version along with the contract address. This is because there are slight
@@ -87,8 +79,6 @@ providers:
   # record how long they took to be included in a block. Here's an example RPC
   # provider tailored for the time to mine metric.
   #
-  # - name: "zkEVM Cardona"
-  #   url: "https://rpc.cardona.zkevm-rpc.com"
   #
   #   For your label, prepending it with something like `ttm` or `time to mine`
   #   will help you differentiate the metrics among the other providers with the
@@ -126,71 +116,17 @@ providers:
   #   - "0x..."
   #
   rpc:
-    - name: "Polygon Mainnet"
-      url: "https://polygon-rpc.com"
-      label: "polygon-rpc.com"
+    - name: "Shibarium"
+      url: "https://www.shibrpc.com"
+      label: "shibrpc.com"
       contracts:
         state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
 
-    - name: "Polygon Mainnet"
-      url: "https://polygon.rpc.blxrbdn.com"
-      label: "blxrbdn.com"
+    - name: "Puppynet"
+      url: "https://puppynet.shibrpc.com"
+      label: "puppynet-shibrpc.com"
       contracts:
         state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
-
-    - name: "Polygon Mainnet"
-      url: "https://polygon.llamarpc.com"
-      label: "llamarpc.com"
-      contracts:
-        state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
-
-    - name: "Polygon Amoy"
-      url: "https://rpc-amoy.polygon.technology/"
-      label: "polygon.technology"
-      contracts:
-        state_sync_receiver_address: "0x0000000000000000000000000000000000001001"
-
-    - name: "zkEVM Mainnet"
-      url: "https://zkevm-rpc.com"
-      label: "zkevm-rpc.com"
-      contracts:
-        global_exit_root_l2_address: "0xa40D5f56745a118D0906a34E69aeC8C0Db1cB8fA"
-        zkevm_bridge_address: "0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe"
-
-    - name: "zkEVM Mainnet"
-      url: "https://polygon-zkevm.blockpi.network/v1/rpc/public"
-      label: "blockpi.network"
-      contracts:
-        global_exit_root_l2_address: "0xa40D5f56745a118D0906a34E69aeC8C0Db1cB8fA"
-        zkevm_bridge_address: "0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe"
-
-    - name: "zkEVM Mainnet"
-      url: "https://rpc.ankr.com/polygon_zkevm"
-      label: "ankr.com"
-      contracts:
-        global_exit_root_l2_address: "0xa40D5f56745a118D0906a34E69aeC8C0Db1cB8fA"
-        zkevm_bridge_address: "0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe"
-
-    - name: "zkEVM Cardona"
-      url: "https://rpc.cardona.zkevm-rpc.com"
-      label: "zkevm-rpc.com"
-      contracts:
-        global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
-        zkevm_bridge_address: "0x528e26b25a34a4A5d0dbDa1d57D318153d2ED582"
-
-    - name: "zkEVM Cardona"
-      url: "https://polygon-zkevm-cardona.blockpi.network/v1/rpc/public"
-      label: "blockpi.network"
-      contracts:
-        global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
-        zkevm_bridge_address: "0x528e26b25a34a4A5d0dbDa1d57D318153d2ED582"
-
-    - name: "zkEVM Bali"
-      url: "https://rpc.internal.zkevm-rpc.com"
-      label: "zkevm-rpc.com"
-      contracts:
-        global_exit_root_l2_address: "0xa40d5f56745a118d0906a34e69aec8c0db1cb8fa"
-        zkevm_bridge_address: "0x1348947e282138d8f377b467F7D9c2EB0F335d1f"
 
     - name: "Ethereum"
       url: "https://eth.llamarpc.com"
@@ -200,46 +136,6 @@ providers:
         checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
         rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
 
-    - name: "Ethereum"
-      url: "https://eth.rpc.blxrbdn.com"
-      label: "blxrbdn.com"
-      contracts:
-        state_sync_sender_address: "0x28e4F3a7f651294B9564800b2D01f35189A5bFbE"
-        checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
-        rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
-
-    - name: "Ethereum"
-      url: "https://ethereum-rpc.publicnode.com"
-      label: "publicnode.com"
-      contracts:
-        state_sync_sender_address: "0x28e4F3a7f651294B9564800b2D01f35189A5bFbE"
-        checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
-        rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
-
-    - name: "Ethereum"
-      url: "https://rpc.ankr.com/eth"
-      label: "ankr.com"
-      contracts:
-        state_sync_sender_address: "0x28e4F3a7f651294B9564800b2D01f35189A5bFbE"
-        checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
-        rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
-
-    - name: "Ethereum"
-      url: "https://ethereum.blockpi.network/v1/rpc/public"
-      label: "blockpi.network"
-      contracts:
-        state_sync_sender_address: "0x28e4F3a7f651294B9564800b2D01f35189A5bFbE"
-        checkpoint_address: "0x86E4Dc95c7FBdBf52e33D563BbDB00823894C287"
-        rollup_manager_address: "0x5132A183E9F3CB7C848b0AAC5Ae0c4f0491B7aB2"
-
-    - name: "Sepolia"
-      url: "https://ethereum-sepolia.publicnode.com"
-      label: "cardona.publicnode.com"
-      contracts:
-        state_sync_sender_address: "0x49E307Fa5a58ff1834E0F8a60eB2a9609E6A5F50"
-        checkpoint_address: "0xbd07D7E1E93c8d4b2a261327F3C28a8EA7167209"
-        rollup_manager_address: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-
     - name: "Sepolia"
       url: "https://ethereum-sepolia.blockpi.network/v1/rpc/public"
       label: "cardona.blockpi.network"
@@ -247,14 +143,6 @@ providers:
         state_sync_sender_address: "0x49E307Fa5a58ff1834E0F8a60eB2a9609E6A5F50"
         checkpoint_address: "0xbd07D7E1E93c8d4b2a261327F3C28a8EA7167209"
         rollup_manager_address: "0x32d33D5137a7cFFb54c5Bf8371172bcEc5f310ff"
-
-    - name: "Sepolia"
-      url: "https://ethereum-sepolia.publicnode.com"
-      label: "bali.publicnode.com"
-      contracts:
-        state_sync_sender_address: "0x49E307Fa5a58ff1834E0F8a60eB2a9609E6A5F50"
-        checkpoint_address: "0xbd07D7E1E93c8d4b2a261327F3C28a8EA7167209"
-        rollup_manager_address: "0xE2EF6215aDc132Df6913C8DD16487aBF118d1764"
 
   # The hash divergence provider is a special type of provider, it takes in a
   # list of providers to see if there are differences between a hashes from
@@ -267,30 +155,17 @@ providers:
   # missing data. The heimdall APIs only allows us to fetch the current state,
   # not the previous, so a longer interval may skip over some events.
   heimdall:
-    - name: "Polygon Mainnet"
-      tendermint_url: "https://tendermint-api.polygon.technology"
-      heimdall_url: "https://heimdall-api.polygon.technology"
-      label: "polygon.technology"
+    - name: "Heimdall Shibarium"
+      tendermint_url: "https://shibarium-tendermint.shibrpc.com"
+      heimdall_url: "https://shibarium-heimdall.shibrpc.com"
+      label: "shibrpc.com"
       interval: 5
 
-    - name: "Polygon Amoy"
-      tendermint_url: "https://tendermint-api-amoy.polygon.technology"
-      heimdall_url: "https://heimdall-api-amoy.polygon.technology"
-      label: "polygon.technology"
+    - name: "Heimdall Puppynet"
+      tendermint_url: "https://puppynet-tendermint.shibrpc.com"
+      heimdall_url: "https://puppynet-heimdall.shibrpc.com"
+      label: "shibrpc.com"
       interval: 5
-
-  # The sensor network provider fetches data from GCP Datastore. You should
-  # remove these providers completely if you're not running this in GCP.
-  sensor_network:
-    - name: "Polygon Mainnet"
-      project: "prj-polygonlabs-devtools-dev"
-      database: ""
-      label: "sensor-network"
-
-    - name: "Polygon Amoy"
-      project: "prj-polygonlabs-devtools-dev"
-      database: "amoy"
-      label: "sensor-network"
 
   # The exchange rates provider fetches data from the Coinbase API. This is
   # helpful when doing conversion rate computations with your observability
@@ -360,8 +235,6 @@ observers:
   - "trusted_batch"
   - "uncles"
   - "validator_wallet_balance"
-  - "zkevm_batches"
-  - "rollup_manager"
   - "span"
 
 # Networks allows you to define custom networks. If defined here, you can use it

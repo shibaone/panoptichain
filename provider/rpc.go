@@ -219,9 +219,9 @@ func (r *RPCProvider) PublishEvents(ctx context.Context) error {
 		r.bus.Publish(ctx, topics.TransactionPool, transactionPoolStatus)
 	}
 
-	if r.batches.TrustedBatch.Number > 0 || r.batches.VirtualBatch.Number > 0 || r.batches.VerifiedBatch.Number > 0 {
-		r.bus.Publish(ctx, topics.ZkEVMBatches, observer.NewMessage(r.Network, r.Label, r.batches))
-	}
+	// if r.batches.TrustedBatch.Number > 0 || r.batches.VirtualBatch.Number > 0 || r.batches.VerifiedBatch.Number > 0 {
+	// 	r.bus.Publish(ctx, topics.ZkEVMBatches, observer.NewMessage(r.Network, r.Label, r.batches))
+	// }
 
 	if r.globalExitRoot != nil || r.mainnetExitRoot != nil || r.rollupExitRoot != nil {
 		er := &observer.ExitRoots{

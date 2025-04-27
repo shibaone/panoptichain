@@ -184,9 +184,9 @@ var observersMap = map[string]Observer{
 	"trusted_batch":                       new(TrustedBatchObserver),
 	"uncles":                              new(UnclesObserver),
 	"validator_wallet_balance":            new(ValidatorWalletBalanceObserver),
-	"zkevm_batches":                       new(ZkEVMBatchObserver),
-	"rollup_manager":                      new(RollupManagerObserver),
-	"span":                                new(HeimdallSpanObserver),
+	// "zkevm_batches":                       new(ZkEVMBatchObserver),
+	"rollup_manager": new(RollupManagerObserver),
+	"span":           new(HeimdallSpanObserver),
 }
 
 func GetEnabledObserverSet() ObserverSet {

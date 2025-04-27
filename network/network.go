@@ -14,58 +14,34 @@ type Network interface {
 }
 
 const (
-	PolygonMainnetName = "Polygon Mainnet"
-	PolygonMumbaiName  = "Polygon Mumbai"
-	PolygonAmoyName    = "Polygon Amoy"
+	ShibariumMainnetName  = "Shibarium"
+	ShibariumPuppynetName = "Puppynet"
 
-	HeimdallMainnetName = "Heimdall Mainnet"
-	HeimdallMumbaiName  = "Heimdall Mumbai"
-	HeimdallAmoyName    = "Heimdall Amoy"
-
-	ZkEVMMainnetName = "zkEVM Mainnet"
-	ZkEVMTestnetName = "zkEVM Testnet"
-	ZkEVMCardonaName = "zkEVM Cardona"
-	ZkEVMBaliName    = "zkEVM Bali"
+	HeimdallMainnetName  = "Heimdall Shibarium"
+	HeimdallPuppynetName = "Heimdall Puppynet"
 
 	EthereumName = "Ethereum"
 	SepoliaName  = "Sepolia"
-	GoerliName   = "Goerli"
 )
 
-var PolygonMainnet = EVMNetwork{Name: PolygonMainnetName, ChainID: 137}
-var PolygonMumbai = EVMNetwork{Name: PolygonMumbaiName, ChainID: 80001}
-var PolygonAmoy = EVMNetwork{Name: PolygonAmoyName, ChainID: 80002}
+var ShibariumMainnet = EVMNetwork{Name: ShibariumMainnetName, ChainID: 109}
+var ShibariumPuppynet = EVMNetwork{Name: ShibariumPuppynetName, ChainID: 157}
 
-var HeimdallMainnet = TendermintNetwork{Name: HeimdallMainnetName, ChainID: "heimdall-137"}
-var HeimdallMumbai = TendermintNetwork{Name: HeimdallMumbaiName, ChainID: "heimdall-80001"}
-var HeimdallAmoy = TendermintNetwork{Name: HeimdallAmoyName, ChainID: "heimdall-80002"}
-
-var ZkEVMMainnet = EVMNetwork{Name: ZkEVMMainnetName, ChainID: 1101}
-var ZkEVMTestnet = EVMNetwork{Name: ZkEVMTestnetName, ChainID: 1442}
-var ZkEVMCardona = EVMNetwork{Name: ZkEVMCardonaName, ChainID: 2442}
-var ZkEVMBali = EVMNetwork{Name: ZkEVMBaliName, ChainID: 2440}
+var HeimdallMainnet = TendermintNetwork{Name: HeimdallMainnetName, ChainID: "heimdall-109"}
+var HeimdallPuppynet = TendermintNetwork{Name: HeimdallPuppynetName, ChainID: "heimdall-157"}
 
 var Ethereum = EVMNetwork{Name: EthereumName, ChainID: 1}
 var Sepolia = EVMNetwork{Name: SepoliaName, ChainID: 11155111}
-var Goerli = EVMNetwork{Name: GoerliName, ChainID: 5}
 
 var KnownNetworks = []Network{
-	&PolygonMainnet,
-	&PolygonMumbai,
-	&PolygonAmoy,
+	&ShibariumMainnet,
+	&ShibariumPuppynet,
 
 	&HeimdallMainnet,
-	&HeimdallMumbai,
-	&HeimdallAmoy,
-
-	&ZkEVMMainnet,
-	&ZkEVMTestnet,
-	&ZkEVMCardona,
-	&ZkEVMBali,
+	&HeimdallPuppynet,
 
 	&Ethereum,
 	&Sepolia,
-	&Goerli,
 }
 
 // EVMNetwork is a specific type of network that is assumed to generally follow

@@ -6,10 +6,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/0xPolygon/panoptichain/network"
 	"github.com/ethereum/go-ethereum/consensus/clique"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/0xPolygon/panoptichain/network"
 )
 
 const refreshInterval = time.Hour
@@ -47,12 +47,10 @@ var cache sync.Map
 func Validators(n network.Network) ([]*Validator, error) {
 	var path string
 	switch n.GetName() {
-	case network.PolygonMainnetName:
-		path = "https://heimdall-api.polygon.technology"
-	case network.PolygonMumbaiName:
-		path = "https://heimdall-api-testnet.polygon.technology"
-	case network.PolygonAmoyName:
-		path = "https://heimdall-api-amoy.polygon.technology"
+	case network.ShibariumMainnetName:
+		path = "https://shibarium-heimdall.shibrpc.com"
+	case network.ShibariumPuppynetName:
+		path = "https://heimdall-api-amoy.Shibarium.technology"
 	default:
 		return nil, errors.New("no validators for this network")
 	}
